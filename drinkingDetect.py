@@ -2,7 +2,7 @@
 #Luke Meyers 7/5/22
 
 
-
+import timeit as ti
 import numpy as np 
 import h5py
 import matplotlib as mpl 
@@ -52,20 +52,22 @@ def insideBox(coords,center):
   '''returns true if inside, returns false if not'''
   #center = [1380,480]
   bound = 50 
-  allcoords = [] 
-  if coords[0] >= center[0]-bound:
+  allcoords = []
+  x = coords[0] 
+  y = coords[1]
+  if x >= center[0]-bound:
     allcoords.append(True)
   else: 
     allcoords.append(False)
-  if coords[0] <= center[0]+bound:
+  if x <= center[0]+bound:
     allcoords.append(True)
   else: 
     allcoords.append(False)
-  if coords[1] >= center[1]-bound:
+  if y >= center[1]-bound:
     allcoords.append(True)
   else: 
     allcoords.append(False)
-  if coords[1] <= center[1]+bound:
+  if y <= center[1]+bound:
     allcoords.append(True)
   else: 
     allcoords.append(False)
@@ -100,7 +102,8 @@ def getAll(data,center1,center2):
   allBlue = []
   for b in range(len(data)):
     justHead = data[b]
-    justHead = justHead[:,3,:]
+    justHead = justHead[:,3,:] 
+    #print(justHead.shape)
     found = detectHead(justHead,center1)
     if len(found) > 0:
       allWhite.append(found)
@@ -109,8 +112,13 @@ def getAll(data,center1,center2):
       allBlue.append(found)
   return allWhite+allBlue
 
-#hu = [] 
-#print(len(hu))
+'''
+test = np.zeros(shape=(5,2))
+test[2] = [3,4]
+test[3]= [nan,nan]
+cTest = test[~np.isnan(test)]
+print(cTest)
+'''
 
 #print(detects)
 
@@ -182,11 +190,11 @@ def cleanDetects(listIn):
 whiteFlower =  [1380,480]
 blueFlower = [630,550]
 trackFirst = np.moveaxis(locations,-1,0)
-trackSecond = np.moveaxis(locations,-1,1)
+#trackSecond = np.moveaxis(locations,-1,1)
 detects = getAll(trackFirst,whiteFlower,blueFlower)
 cleanDetect = cleanDetects(detects)
 print(len(cleanDetect))
-print(cleanDetect)
+#print(cleanDetect)
 print('ran')
 
 '''
