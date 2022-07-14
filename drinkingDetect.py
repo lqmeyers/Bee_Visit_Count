@@ -96,20 +96,18 @@ longer than 5 frames, seperated by at least 5 frames from other visits '''
 
 def getAll(data,center1,center2):
   '''gets all frame indicies where a bee is in the right spot'''
-  all = [] 
+  allWhite = [] 
+  allBlue = []
   for b in range(len(data)):
     justHead = data[b]
     justHead = justHead[:,3,:]
     found = detectHead(justHead,center1)
     if len(found) > 0:
-      all.append(found)
-  for b in range(len(data)):
-    justHead = data[b]
-    justHead = justHead[:,3,:]
+      allWhite.append(found)
     found = detectHead(justHead,center2)
     if len(found) > 0:
-      all.append(found)
-  return all 
+      allBlue.append(found)
+  return allWhite+allBlue
 
 #hu = [] 
 #print(len(hu))
@@ -184,7 +182,17 @@ def cleanDetects(listIn):
 whiteFlower =  [1380,480]
 blueFlower = [630,550]
 trackFirst = np.moveaxis(locations,-1,0)
+trackSecond = np.moveaxis(locations,-1,1)
 detects = getAll(trackFirst,whiteFlower,blueFlower)
-#print(len(cleanDetects(detects)))
-print(cleanDetects(detects))
+cleanDetect = cleanDetects(detects)
+print(len(cleanDetect))
+print(cleanDetect)
 print('ran')
+
+'''
+#some data exploration 
+print(trackSecond.shape)
+for i in range(len(trackSecond[:,0,0,0])):
+  print(i)
+  print(trackSecond[i,:,3,:])
+  '''
