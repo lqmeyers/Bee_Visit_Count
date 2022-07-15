@@ -6,13 +6,13 @@ import numpy as np
 import cv2
 
 #vidFile = r"C:\Users\lqmey\OneDrive\Desktop\Bee Videos\test in feild\20_6_22_vids\fixed2x6_20_22_test.mp4"
-imgFile = r'C:/Users/lqmey/OneDrive/Desktop/Bee Videos/test in feild/22_6_22_vids/targetFrame.tiff'
+#imgFile = r'C:/Users/lqmey/OneDrive/Desktop/Bee Videos/test in feild/22_6_22_vids/targetFrame.tiff'
 
 def main(file,mode='center',show_validation=True):
     '''recieves image file and finds flower coords. If mode = center
     returns center coords, else corners. If show validation = True will plot
     and display results on image'''
-    img = cv2.imread(imgFile)
+    img = cv2.imread(file)
 
     scale = 50 #downsize image for processing 
     height = int(img.shape[0]*scale/100)
@@ -68,10 +68,12 @@ def main(file,mode='center',show_validation=True):
     if show_validation == True:
         if mode == 'center':
             img = cv2.circle(img,whiteCenter,4, (0,0,255), -1)
+            img = cv2.circle(img,(1345,595),4, (0,255,255), -1)
             img = cv2.circle(img,blueCenter,4, (0,0,255), -1)
+            img = cv2.circle(img,(535,675),4, (0,255,255), -1)
         else:
             for p in whiteCoords:
-                img = cv2.circle(img,p,4, (0,255,255), -1)
+                img = cv2.circle(img,p,4, (0,255,255), -1)       
             for p in blueCoords:
                 img = cv2.circle(img,p,4, (0,255,255), -1)
         cv2.imshow('display',img)

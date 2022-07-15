@@ -5,11 +5,14 @@
 import timeit as ti
 import numpy as np 
 import h5py
-import matplotlib as mpl 
-from matplotlib import pyplot as plt
+import matplotlib.patches as ptch
+import flowerFinder as ff 
+import cv2
 
 
-filename = r"C:\Users\lqmey\Downloads\just_vid_7.analysis.h5.h"
+#filename = r"C:\Users\lqmey\Downloads\just_vid_7.analysis.h5.h"
+filename = r"C:\Users\lqmey\Downloads\validation_22_22_6.analysis.h5.h"
+
 
 with h5py.File(filename,'r') as f:
   dset_names = list(f.keys())
@@ -17,7 +20,7 @@ with h5py.File(filename,'r') as f:
   node_names = [n.decode() for n in f['node_names'][:]]
 
 
-""" #some info about the h5 dataset 
+#""" #some info about the h5 dataset 
 print('-----------filename---------------')
 print(filename)
 print()
@@ -43,11 +46,11 @@ for i, name in enumerate(node_names):
 
 trackFirst = np.moveaxis(locations,-1,0) #move axis I think will do the trick 
 #print(trackFirst[0])
-'''
-justHead = trackFirst[0]
-justHead = justHead[:,0,:] #take just the first of the second set 
-#print(justHead) #this gives a list of all the head coordinates 
-'''
+
+setup = """
+import matplotlib.patches as ptch
+"""
+#myBox="""
 def insideBox(coords,center):
   '''returns true if inside, returns false if not'''
   #center = [1380,480]
@@ -75,24 +78,59 @@ def insideBox(coords,center):
     return False
   else: 
     return True 
+#"""
+#my_code = """ 
+def insideCircle(coords,center):
+  '''returns true if coords inside circle at center, false if not'''
+  bound = 50
+  xIn = coords[0]
+  yIn = coords[1]
+  xC = center[0]
+  yC = center[1]
+  if ((xIn-xC)**2) + ((yIn-yC)**2) <= bound**2:
+    return True 
+  else:
+    return False 
 
-def detectHead(headCoords,center):
+#print(insideCircle([50,50],[0,0]))
+
+
+#"""
+#print('time for insidecircle to run',ti.timeit(setup=setup,stmt=my_code,number=100000))
+#print('Time for insidebox to run',ti.timeit(setup=setup,stmt=myBox,number=100000))
+
+
+def detectHead(headCoords,center,mode='box'):
     '''takes a list of head coords and returns the indexes of frames 
     where they are inside the bounding box'''
     iOut = []
     cOut = [] 
+    #circ = ptch.Circle((center),radius = 50)
+    #circ = ptch.Rectangle((center[0]-50,center[1]-50),100,100)
     for i in range(len(headCoords)):
-      #'''   #decided to first get all frames with detection instead of filtering unnecesarily on non-detected frames 
+      if mode == 'box':
+        #'''   #decided to first get all frames with detection instead of filtering unnecesarily on non-detected frames 
         if insideBox(headCoords[i],center) == True and insideBox(headCoords[i-1],center)==False:
             iOut.append(i)
         elif insideBox(headCoords[i],center) == False and insideBox(headCoords[i-1],center)==True:
             iOut.append(i)
+        #print(i,'heads detected inside box')
       #'''
+      elif mode == 'circle':
+        if insideCircle(headCoords[i],center) == True and insideCircle(headCoords[i-1],center)==False:
+            iOut.append(i)
+        elif insideCircle(headCoords[i],center) == False and insideCircle(headCoords[i-1],center)==True:
+            iOut.append(i)
+        #print('frame #'i,'heads detected inside circle')
+      else:
+        print('unaccepted mode!')
+        break
+    print(iOut)
     return iOut#,cOut 
 
-'''ok so parameters of a drinking visit: 
-longer than 5 frames, seperated by at least 5 frames from other visits '''
 
+'''ok so parameters of a drinking visit: 
+longer than 15 frames, seperated by at least 5 frames from other visits '''
 
 #print(trackFirst[1].shape)
 
@@ -103,14 +141,20 @@ def getAll(data,center1,center2):
   for b in range(len(data)):
     justHead = data[b]
     justHead = justHead[:,3,:] 
-    #print(justHead.shape)
-    found = detectHead(justHead,center1)
+    #found = detectHead(justHead,center1)
+    #print('flower1 box bee #',b)
+    found = detectHead(justHead,center1,'circle')
+    #print('flower1 circle bee #',b)
     if len(found) > 0:
       allWhite.append(found)
-    found = detectHead(justHead,center2)
+    #found = detectHead(justHead,center2)
+    #print('flower2 box bee #',b)
+    found = detectHead(justHead,center2,'circle')
+    #print('flower2 circle bee #',b)
     if len(found) > 0:
       allBlue.append(found)
   return allWhite+allBlue
+
 
 '''
 test = np.zeros(shape=(5,2))
@@ -119,7 +163,8 @@ test[3]= [nan,nan]
 cTest = test[~np.isnan(test)]
 print(cTest)
 '''
-
+#print('Time for DetectHead with Circles to run',ti.timeit(setup=setup,stmt=my_Circle,number=100000))
+#print('Time for DetectHead with Circles to run',ti.timeit(setup=setup,stmt=my_Circle,number=100000))
 #print(detects)
 
 def groupBy2(listIn):
@@ -187,11 +232,22 @@ def cleanDetects(listIn):
         
       
 ##------------------where the magic happens----------------
-whiteFlower =  [1380,480]
-blueFlower = [630,550]
+#whiteFlower =  [1380,480] #use these for file 5
+#blueFlower = [630,550]
+
+frameFile = r'C:/Users/lqmey/OneDrive/Desktop/Bee Videos/test in feild/22_6_22_vids/targetFrame.tiff'
+
+whiteCenter = ff.main(frameFile,'center',show_validation=True)[0]
+blueCenter = ff.main(frameFile,'center',show_validation=True)[1]
+
+
 trackFirst = np.moveaxis(locations,-1,0)
 #trackSecond = np.moveaxis(locations,-1,1)
+
+whiteFlower = [535,675]
+blueFlower = [1345,595]
 detects = getAll(trackFirst,whiteFlower,blueFlower)
+#detects = getAll(trackFirst,whiteCenter,blueCenter)
 cleanDetect = cleanDetects(detects)
 print(len(cleanDetect))
 #print(cleanDetect)
