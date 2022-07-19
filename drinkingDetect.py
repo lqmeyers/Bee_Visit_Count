@@ -20,7 +20,7 @@ with h5py.File(filename,'r') as f:
   node_names = [n.decode() for n in f['node_names'][:]]
 
 
-#""" #some info about the h5 dataset 
+""" #some info about the h5 dataset 
 print('-----------filename---------------')
 print(filename)
 print()
@@ -235,19 +235,19 @@ def cleanDetects(listIn):
 #whiteFlower =  [1380,480] #use these for file 5
 #blueFlower = [630,550]
 
-frameFile = r'C:/Users/lqmey/OneDrive/Desktop/Bee Videos/test in feild/22_6_22_vids/targetFrame.tiff'
+frameFile = r'C:/Users/lqmey/OneDrive/Desktop/Bee Videos/test in feild/22_6_22_vids/targetFrame.tiff' 
 
-whiteCenter = ff.main(frameFile,'center',show_validation=True)[0]
-blueCenter = ff.main(frameFile,'center',show_validation=True)[1]
-
+autoCenters = ff.main(frameFile,'center',show_validation=False)
+whiteCenter = autoCenters[0]
+blueCenter = autoCenters[1]
 
 trackFirst = np.moveaxis(locations,-1,0)
 #trackSecond = np.moveaxis(locations,-1,1)
 
-whiteFlower = [535,675]
-blueFlower = [1345,595]
-detects = getAll(trackFirst,whiteFlower,blueFlower)
-#detects = getAll(trackFirst,whiteCenter,blueCenter)
+#whiteFlower = [535,675] #manually annotated points
+#blueFlower = [1345,595]
+#detects = getAll(trackFirst,whiteFlower,blueFlower)
+detects = getAll(trackFirst,whiteCenter,blueCenter)
 cleanDetect = cleanDetects(detects)
 print(len(cleanDetect))
 #print(cleanDetect)
