@@ -6,10 +6,10 @@ import numpy as np
 import cv2
 
 #vidFile = r"C:\Users\lqmey\OneDrive\Desktop\Bee Videos\test in feild\20_6_22_vids\fixed2x6_20_22_test.mp4"
-#imgFile = r'C:/Users/lqmey/OneDrive/Desktop/Bee Videos/test in feild/22_6_22_vids/targetFrame.tiff'
+imgFile = r'C:/Users/lqmey/OneDrive/Desktop/Bee Videos/test in feild/22_6_22_vids/targetFrame.tiff'
 
-def main(file,mode='center',show_validation=True):
-    '''recieves image file and finds flower coords. If mode = center
+def main(file,flowerNum,show_validation=True):
+    '''recieves image file and finds coords of flowerNum # of flowers. If mode = center
     returns center coords, else corners. If show validation = True will plot
     and display results on image'''
     img = cv2.imread(file)
@@ -37,24 +37,44 @@ def main(file,mode='center',show_validation=True):
     bl = (boxList(contours))
     bl.sort(key=lambda x: np.average(x[1]),reverse=True) #sorts by largest 
 
-    whiteFlower = bl[0] #takes just two largest rectangles
-    blueFlower = bl[1]
-    if np.average(whiteFlower[1]) < 150 or np.average(blueFlower[1]) < 150  : 
-        return "POTENTIAL ERROR: FLOWER BOUNDS SMALLER THAN EXPECTED"
+    flowerList = []
+    flowerDict = {}
+    for n in range(flowerNum):
+       flowerList.append(bl[n])
 
-    whiteCenter = whiteFlower[0] #pulls out center coord
-    blueCenter = blueFlower[0]
+    #whiteFlower = bl[0] #takes just two largest rectangles
+    # blueFlower = bl[1]
+    unscale = (1/(scale/100))
+
+    tckr = 0 
+    for f in flowerList:
+        if np.average(f[1]) < 150:
+            return "POTENTIAL ERROR: FLOWER BOUNDS SMALLER THAN EXPECTED"
+        else:
+            flowerCenter = f[0]
+            flowerCorners = getCorners(f)
+            t = 0 
+            for p in flowerCorners:
+                flowerCorners[t] = [int(p[0]*unscale),int(p[1]*unscale)]
+                t = t + 1
+            flowerDict[tckr]={'center':(int(flowerCenter[0]*unscale),int(flowerCenter[1]*unscale)),
+                            'corners':flowerCorners}
+        tckr = tckr+1
+        
+    #whiteCenter = whiteFlower[0] #pulls out center coord
+    #blueCenter = blueFlower[0]
 
     #print(whiteCenter)
     #print(blueCenter)
-    unscale = (1/(scale/100))
-   
-    whiteCenter = (int(whiteCenter[0]*unscale),int(whiteCenter[1]*unscale))
-    blueCenter = (int(blueCenter[0]*unscale),int(blueCenter[1]*unscale))
-
-    whiteCoords = getCorners(whiteFlower)
-    blueCoords = getCorners(blueFlower)
     
+   
+    #whiteCenter = (int(whiteCenter[0]*unscale),int(whiteCenter[1]*unscale))
+    #blueCenter = (int(blueCenter[0]*unscale),int(blueCenter[1]*unscale))
+
+    #whiteCoords = getCorners(whiteFlower)
+    #blueCoords = getCorners(blueFlower)
+    
+    '''
     tckr = 0 
     for p in whiteCoords:
         whiteCoords[tckr] = [int(p[0]*unscale),int(p[1]*unscale)]
@@ -63,29 +83,27 @@ def main(file,mode='center',show_validation=True):
     for p in blueCoords:
         blueCoords[tckr] = [int(p[0])*unscale,int(p[1]*unscale)]
         tckr = tckr+1
-
+    #'''
 
     if show_validation == True:
-        if mode == 'center':
-            img = cv2.circle(img,whiteCenter,4, (0,0,255), -1)
-            img = cv2.circle(img,(1345,595),4, (0,255,255), -1)
-            img = cv2.circle(img,blueCenter,4, (0,0,255), -1)
-            img = cv2.circle(img,(535,675),4, (0,255,255), -1)
-        else:
-            for p in whiteCoords:
-                img = cv2.circle(img,p,4, (0,255,255), -1)       
-            for p in blueCoords:
+        #img = cv2.circle(img,whiteCenter,4, (0,0,255), -1)
+        #img = cv2.circle(img,blueCenter,4, (0,0,255), -1)
+        for f in range(len(flowerDict)):
+            img = cv2.circle(img,flowerDict[f]['center'],4,(0,0,255),-1)
+            for p in flowerDict[f]['corners']:
                 img = cv2.circle(img,p,4, (0,255,255), -1)
         cv2.imshow('display',img)
         cv2.waitKey()
 
+    return flowerDict
+    '''
     if mode == 'center':
-        print(whiteCenter,blueCenter)
+        #print(whiteCenter,blueCenter)
         return([whiteCenter,blueCenter])
     else: 
         print(whiteCoords,blueCoords)
         return([whiteCoords,blueCoords])
-    
+    '''
 
 def boxList(contours):
     '''fits a rectangle to all contours and returns list of 
@@ -108,5 +126,5 @@ def getCorners(rotRect):
 #print(box)
 
 
-#main(imgFile,'corners')
-#print('ran')
+main(imgFile,2)
+print('ran')
