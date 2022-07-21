@@ -3,12 +3,12 @@
 
 
 import timeit as ti
-from xml.etree.ElementTree import C14NWriterTarget
 import numpy as np 
 import h5py
 import matplotlib.patches as ptch
 import flowerFinder as ff 
 import cv2
+import json
 import math
 
 
@@ -221,21 +221,23 @@ def detectVisit(waistCoords,corners):
     return iOut#,cOut 
 
 
-def getAllVisits(data,corners1,corners2):
+def getAllVisits(data,flower_config):
   '''gets all frame indicies where a bee is in the right spot'''
-  allWhite = [] 
-  allBlue = []
+  all = [] 
+  out = []
+  for i in range(len(flower_config)):
+    all.append([])
   for b in range(len(data)):
-    justWaist = data[b]
-    justWaist = justWaist[:,3,:]  #this is actually still head lol 
-    found = detectVisit(justWaist,corners1)
-    if len(found) > 0:
-      allWhite.append(found)
-    found = detectVisit(justWaist,corners2)
-    if len(found) > 0:
-      allBlue.append(found)
-  return allWhite+allBlue
-
+    justHead = data[b]
+    justHead = justHead[:,3,:]  #this is actually still head lol 
+    for f in range(len(flower_config)):
+      found = detectVisit(justHead,makeCW(expandRect(flower_config[str(f)]['corners'],30)))
+      if len(found) > 0:
+        all[f].append(found)
+        #all= 1
+  for i in all:
+    out = out+i 
+  return out 
 
 '''
 test = np.zeros(shape=(5,2))
@@ -322,33 +324,19 @@ def makeCW(corners):
     return cOut
       
 ##------------------where the magic happens----------------
-#whiteFlower =  [1380,480] #use these for file 5
-#blueFlower = [630,550]
 
 frameFile = r'C:/Users/lqmey/OneDrive/Desktop/Bee Videos/test in feild/22_6_22_vids/targetFrame.tiff'
+ff.main(frameFile,2,show_validation=False)
 
-autoCorners = ff.main(frameFile,'corners',show_validation=False)
-
-corners1 = autoCorners[0]
-corners1 = expandRect(corners1,30)
-#corectC1 = makeCW(corners1)
-corners2 = autoCorners[1]
-corners2 = expandRect(corners2,30)
-#print(corners2)
-
-#print(insideRotRect((0,500),corectC1[0],corectC1[1],corectC1[2],corectC1[3]))
-
-trackFirst = np.moveaxis(locations,-1,0)
-#trackSecond = np.moveaxis(locations,-1,1)
+configFile = 'flower_patch_config.json'
+f = open(configFile)
+flower_config = json.load(f)
 
 
-whiteFlower = [535,675]
-blueFlower = [1345,595]
-detects = getAllVisits(trackFirst,makeCW(corners1),makeCW(corners2))
-#detects = getAll(trackFirst,whiteCenter,blueCenter)
+detects = getAllVisits(trackFirst,flower_config)
 cleanDetect = cleanDetects(detects)
 print(len(cleanDetect))
-#print(cleanDetect)
+
 print('ran')
 
 

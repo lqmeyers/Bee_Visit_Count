@@ -4,9 +4,12 @@
 
 import numpy as np 
 import cv2
+import json
+
+from sklearn.random_projection import johnson_lindenstrauss_min_dim
 
 #vidFile = r"C:\Users\lqmey\OneDrive\Desktop\Bee Videos\test in feild\20_6_22_vids\fixed2x6_20_22_test.mp4"
-imgFile = r'C:/Users/lqmey/OneDrive/Desktop/Bee Videos/test in feild/22_6_22_vids/targetFrame.tiff'
+#imgFile = r'C:/Users/lqmey/OneDrive/Desktop/Bee Videos/test in feild/22_6_22_vids/targetFrame.tiff'
 
 def main(file,flowerNum,show_validation=True):
     '''recieves image file and finds coords of flowerNum # of flowers. If mode = center
@@ -49,10 +52,12 @@ def main(file,flowerNum,show_validation=True):
     tckr = 0 
     for f in flowerList:
         if np.average(f[1]) < 150:
-            return "POTENTIAL ERROR: FLOWER BOUNDS SMALLER THAN EXPECTED"
+            #return "POTENTIAL ERROR: FLOWER BOUNDS SMALLER THAN EXPECTED"
+            hi=0 #placeholder
         else:
             flowerCenter = f[0]
             flowerCorners = getCorners(f)
+            flowerCorners = flowerCorners.tolist()
             t = 0 
             for p in flowerCorners:
                 flowerCorners[t] = [int(p[0]*unscale),int(p[1]*unscale)]
@@ -60,30 +65,6 @@ def main(file,flowerNum,show_validation=True):
             flowerDict[tckr]={'center':(int(flowerCenter[0]*unscale),int(flowerCenter[1]*unscale)),
                             'corners':flowerCorners}
         tckr = tckr+1
-        
-    #whiteCenter = whiteFlower[0] #pulls out center coord
-    #blueCenter = blueFlower[0]
-
-    #print(whiteCenter)
-    #print(blueCenter)
-    
-   
-    #whiteCenter = (int(whiteCenter[0]*unscale),int(whiteCenter[1]*unscale))
-    #blueCenter = (int(blueCenter[0]*unscale),int(blueCenter[1]*unscale))
-
-    #whiteCoords = getCorners(whiteFlower)
-    #blueCoords = getCorners(blueFlower)
-    
-    '''
-    tckr = 0 
-    for p in whiteCoords:
-        whiteCoords[tckr] = [int(p[0]*unscale),int(p[1]*unscale)]
-        tckr = tckr + 1
-    tckr = 0    
-    for p in blueCoords:
-        blueCoords[tckr] = [int(p[0])*unscale,int(p[1]*unscale)]
-        tckr = tckr+1
-    #'''
 
     if show_validation == True:
         #img = cv2.circle(img,whiteCenter,4, (0,0,255), -1)
@@ -92,18 +73,15 @@ def main(file,flowerNum,show_validation=True):
             img = cv2.circle(img,flowerDict[f]['center'],4,(0,0,255),-1)
             for p in flowerDict[f]['corners']:
                 img = cv2.circle(img,p,4, (0,255,255), -1)
-        cv2.imshow('display',img)
+        cv2.imshow('display',thresh)
         cv2.waitKey()
+        #cv2.destroyAllWindows()
 
-    return flowerDict
-    '''
-    if mode == 'center':
-        #print(whiteCenter,blueCenter)
-        return([whiteCenter,blueCenter])
-    else: 
-        print(whiteCoords,blueCoords)
-        return([whiteCoords,blueCoords])
-    '''
+    with open('flower_patch_config.json','w') as f:
+        json.dump(flowerDict,f,indent=3)
+    return
+ 
+  
 
 def boxList(contours):
     '''fits a rectangle to all contours and returns list of 
@@ -126,5 +104,10 @@ def getCorners(rotRect):
 #print(box)
 
 
-main(imgFile,2)
-print('ran')
+#results = (main(imgFile,2))
+
+#json_string = json.dumps(results,indent=3)
+#print(json_string)
+
+
+#print('ran')
