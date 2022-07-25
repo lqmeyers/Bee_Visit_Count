@@ -220,9 +220,6 @@ def detectVisit(waistCoords,corners):
     c2 = corners[1]
     c3 = corners[2]
     c4 = corners[3]
-    #circ = ptch.Circle((center),radius = 50)
-    #circ = ptch.Rectangle((center[0]-50,center[1]-50),100,100)
-    #print(len(waistCoords))
     for i in range(len(waistCoords)):
         if i == 0: #first frame 
           if insideRotRect(waistCoords[i],c1,c2,c3,c4) == True:
@@ -235,8 +232,7 @@ def detectVisit(waistCoords,corners):
             iOut.append(i)
           if insideRotRect(waistCoords[i],c1,c2,c3,c4) == False and insideRotRect(waistCoords[i-1],c1,c2,c3,c4)==True:
             iOut.append(i)
-    #print(iOut)
-    return iOut#,cOut 
+    return iOut
 
 
 def getAllVisits(data,flower_config):
@@ -247,11 +243,13 @@ def getAllVisits(data,flower_config):
     all.append([])
   for b in range(len(data)):
     justHead = data[b]
-    justHead = justHead[:,3,:]  #this is actually still head lol 
+    justHead = justHead[:,3,:] 
     for f in range(len(flower_config)):
       found = detectVisit(justHead,makeCW(expandRect(flower_config[str(f)]['corners'],30)))
       #print('bee #',b,'at flower',f,'=',found)
+      #print(np.array(found))
       if len(found) > 0:
+        found = groupBy2(found,[b,f])#{'bee':b,'flower':f}) #groups into start and end frame sets
         all[f].append(found)
         #all= 1
   for i in all:
@@ -269,16 +267,30 @@ print(cTest)
 #print('Time for DetectHead with Circles to run',ti.timeit(setup=setup,stmt=my_Circle,number=100000))
 #print(detects)
 
-def groupBy2(listIn):
+def groupBy2(listIn,metadata):
   '''takes a list in and groups items into sets of 2 '''
   listOut = []
   for i in range(len(listIn))[0:len(listIn):2]:
-    listOut.append([listIn[i],listIn[i+1]])
-  return listOut
+    listOut.append([listIn[i],listIn[i+1],metadata])
+  return (listOut)
     
 #testL = [1,2,3,4,5,6]
 #print(groupBy2(testL))
   
+def makeDict(listIn):
+  '''takes list output of cleanDetects and turns into dictionary 
+  to prepare for writing to json'''
+  dictOut = {}
+  for i in range(len(listIn)):
+    dictOut[i] = {'start_frame':listIn[i][0],
+                  'end_frame':listIn[i][1],
+                  'track_id':listIn[i][2][0],
+                  'flower_id':listIn[i][2][1]}
+  return dictOut
+
+
+
+
 
 def cleanDetects(listIn):
   '''Cleans list to get final indexes of visits. First filters detections to make 
@@ -287,12 +299,12 @@ def cleanDetects(listIn):
   cleanV = []
   finals = [] #put finals here to get all visits appended together 
   for l in listIn:
-    d = groupBy2(l) #groups into start and end frame sets
     cleanD = []
-    for de in d:
+    for de in l:
+      #print(type(de[0]))
       if de[1] - de[0] > 15:
         cleanD.append(de) #only keeps visits longer than 5 frames 
-    #print(cleanD)
+    print(cleanD)
      #finals = [] #put it here to keep visits grouped by track/individual 
     for i in range(len(cleanD)): #cleans through to make sure visits are seperate
       final = [] 
@@ -305,16 +317,19 @@ def cleanDetects(listIn):
           final.append(next[1])
         else:
           final.append(current[1])
+        final.append(current[2])
       elif i == (len(cleanD)-1) and len(cleanD)>1: #last visit in list, don't need to check after 
         current = cleanD[i]
         past = cleanD[i-1]
         if current[0] > past[1]+5:
           final.append(current[0])
           final.append(current[1])
+        final.append(current[2])
       elif len(cleanD) == 1: #if only one visit for individual 
         current= cleanD[0]
         final.append(current[0]) #do it seperately to not get another set of brackets 
         final.append(current[1])
+        final.append(current[2])
       else: #other visits, in the middle of a set 
         next = cleanD[i+1]
         current = cleanD[i]
@@ -325,7 +340,8 @@ def cleanDetects(listIn):
             final.append(next[1])
           else:
             final.append(current[1])
-      if len(final)>0: #clean empty detections
+        final.append(current[2])
+      if len(final)>1: #clean empty detections
         finals.append(final)
     #if len(finals) > 0: #uncomment this if grouping by individual 
       #cleanV.appenf(finals)
@@ -354,7 +370,7 @@ flower_config = json.load(open(configFile))
 
 detects = getAllVisits(trackFirst,flower_config)
 cleanDetect = cleanDetects(detects)
-print(cleanDetect)
+print(makeDict(cleanDetect))
 
 print('ran')
 
