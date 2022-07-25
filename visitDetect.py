@@ -6,10 +6,12 @@ import timeit as ti
 import numpy as np 
 import h5py
 import matplotlib.patches as ptch
+from regex import B
 import flowerFinder as ff 
 import cv2
 import json
 import math
+
 
 
 #filename = r"C:\Users\lqmey\Downloads\just_vid_7.analysis.h5.h"
@@ -47,7 +49,13 @@ for i, name in enumerate(node_names):
 #"""
 
 trackFirst = np.moveaxis(locations,-1,0) #move axis I think will do the trick 
-#print(trackFirst[0])
+
+'''
+check = trackFirst[71]
+for i in range(len(check[:,3,:])):
+  if np.isnan(check[i,3,0]) == False:
+    print(i,check[i,3,:])
+'''
 
 
 def insideBox(coord,center,bound=50):
@@ -212,10 +220,18 @@ def detectVisit(waistCoords,corners):
     c4 = corners[3]
     #circ = ptch.Circle((center),radius = 50)
     #circ = ptch.Rectangle((center[0]-50,center[1]-50),100,100)
+    #print(len(waistCoords))
     for i in range(len(waistCoords)):
-        if insideRotRect(waistCoords[i],c1,c2,c3,c4) == True and insideRotRect(waistCoords[i-1],c1,c2,c3,c4)==False:
+        if i == 0: #first frame 
+          if insideRotRect(waistCoords[i],c1,c2,c3,c4) == True:
             iOut.append(i)
-        if insideRotRect(waistCoords[i],c1,c2,c3,c4) == False and insideRotRect(waistCoords[i-1],c1,c2,c3,c4)==True:
+        elif i == len(waistCoords)-1: #last frame 
+          if insideRotRect(waistCoords[i],c1,c2,c3,c4) == True:
+            iOut.append(i)
+        else: 
+          if insideRotRect(waistCoords[i],c1,c2,c3,c4) == True and insideRotRect(waistCoords[i-1],c1,c2,c3,c4)==False:
+            iOut.append(i)
+          if insideRotRect(waistCoords[i],c1,c2,c3,c4) == False and insideRotRect(waistCoords[i-1],c1,c2,c3,c4)==True:
             iOut.append(i)
     #print(iOut)
     return iOut#,cOut 
@@ -232,6 +248,7 @@ def getAllVisits(data,flower_config):
     justHead = justHead[:,3,:]  #this is actually still head lol 
     for f in range(len(flower_config)):
       found = detectVisit(justHead,makeCW(expandRect(flower_config[str(f)]['corners'],30)))
+      #print('bee #',b,'at flower',f,'=',found)
       if len(found) > 0:
         all[f].append(found)
         #all= 1
@@ -329,13 +346,13 @@ frameFile = r'C:/Users/lqmey/OneDrive/Desktop/Bee Videos/test in feild/22_6_22_v
 ff.main(frameFile,2,show_validation=False)
 
 configFile = 'flower_patch_config.json'
-f = open(configFile)
-flower_config = json.load(f)
+
+flower_config = json.load(open(configFile))
 
 
 detects = getAllVisits(trackFirst,flower_config)
 cleanDetect = cleanDetects(detects)
-print(len(cleanDetect))
+print(cleanDetect)
 
 print('ran')
 
