@@ -17,11 +17,13 @@ import math
 #filename = r"C:\Users\lqmey\Downloads\just_vid_7.analysis.h5.h"
 filename = r"C:\Users\lqmey\Downloads\validation_22_22_6.analysis.h5.h"
 
-
-with h5py.File(filename,'r') as f:
-  dset_names = list(f.keys())
-  locations = f['tracks'][:].T
-  node_names = [n.decode() for n in f['node_names'][:]]
+def parseTrackData(file):
+  with h5py.File(file,'r') as f:
+    dset_names = list(f.keys())
+    locations = f['tracks'][:].T
+    node_names = [n.decode() for n in f['node_names'][:]]
+  trackFirst = np.moveaxis(locations,-1,0) #move axis I think will do the trick 
+  return trackFirst
 
 
 """ #some info about the h5 dataset 
@@ -48,7 +50,7 @@ for i, name in enumerate(node_names):
   print()
 #"""
 
-trackFirst = np.moveaxis(locations,-1,0) #move axis I think will do the trick 
+trackFirst = parseTrackData(filename)
 
 '''
 check = trackFirst[71]
