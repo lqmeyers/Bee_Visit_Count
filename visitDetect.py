@@ -1,8 +1,6 @@
 ##trying to get number of visits from video 
 #Luke Meyers 7/5/22
 
-
-
 import numpy as np 
 import h5py
 import flowerFinder as ff 
@@ -10,14 +8,14 @@ import json
 import math
 
 #filename = r"C:\Users\lqmey\Downloads\just_vid_7.analysis.h5.h"
-filename = r"C:\Users\lqmey\Downloads\validation_22_22_6.analysis.h5.h"
+#filename = r"C:\Users\lqmey\Downloads\validation_22_22_6.analysis.h5.h"
 
 def parseTrackData(file):
   with h5py.File(file,'r') as f:
-    dset_names = list(f.keys())
+    #dset_names = list(f.keys())
     locations = f['tracks'][:].T
-    node_names = [n.decode() for n in f['node_names'][:]]
-  trackFirst = np.moveaxis(locations,-1,0) #move axis I think will do the trick 
+    #node_names = [n.decode() for n in f['node_names'][:]]
+  trackFirst = np.moveaxis(locations,-1,0) #groups by track id
   return trackFirst
 
 
@@ -87,7 +85,10 @@ def insideCircle(coords,center):
     return False 
 
 def insideRotRect(coord,corner1,corner2,corner3,corner4):
-    '''returns true if point inside rectangle defined by 4 corners'''
+    '''returns true if point inside rectangle defined by 4 corners.
+    Uses y intercepts of lines parrelel to bounds intersecting coord 
+    in qustion, and checks if in correct range. Bloated func becuase of all possible
+    orders for coord entry '''
     x1 = corner1[0]
     y1 = corner1[1]
     x2 = corner2[0]
@@ -100,10 +101,9 @@ def insideRotRect(coord,corner1,corner2,corner3,corner4):
     yC = coord[1]
     rise1 = (y1-y2)
     run1 = (x1-x2)
-    #print('m1=',m1)
     rise2 = (y2-y3)
     run2 = (x2-x3)
-    if rise1 != 0 and rise2 != 0 and run2 != 0 and run1 != 0:
+    if rise1 != 0 and rise2 != 0 and run2 != 0 and run1 != 0: #for rotated rectangle
         m1 = rise1/run1
         m2 = rise2/run2
         #print('m2=',m2)
@@ -142,7 +142,8 @@ def insideRotRect(coord,corner1,corner2,corner3,corner4):
         else:
             print('coords not in sequential order!')
             #break
-    else:
+    
+    else: #in off chance perfectly aligned with frame 
         if x1 < x2 and y2 > y3:
             centerX = ((x2-x1)/2)+x1
             centerY = ((y2-y3)/2)+y3
@@ -253,19 +254,16 @@ def cleanDetects(listIn):
   '''Cleans list to get final indexes of visits. First filters detections to make 
   sure they last longer than 15 frames, then it checks list and makes sure visits are at least 5 
   frames apart, and if not, it combines them. Output as one long list of all recorded visits'''
-  cleanV = []
   finals = [] #put finals here to get all visits appended together 
   for l in listIn:
     cleanD = []
     for de in l:
-      #print(type(de[0]))
       if de[1] - de[0] > 15:
         cleanD.append(de) #only keeps visits longer than 5 frames 
-    print(cleanD)
-     #finals = [] #put it here to keep visits grouped by track/individual 
+
     for i in range(len(cleanD)): #cleans through to make sure visits are seperate
       final = [] 
-      #print(i)
+     
       if i == 0 and len(cleanD) > 1: #first visit in list, no previous 
         current = cleanD[i]
         next = cleanD[i+1]
@@ -275,6 +273,7 @@ def cleanDetects(listIn):
         else:
           final.append(current[1])
         final.append(current[2])
+
       elif i == (len(cleanD)-1) and len(cleanD)>1: #last visit in list, don't need to check after 
         current = cleanD[i]
         past = cleanD[i-1]
@@ -282,11 +281,13 @@ def cleanDetects(listIn):
           final.append(current[0])
           final.append(current[1])
         final.append(current[2])
+
       elif len(cleanD) == 1: #if only one visit for individual 
         current= cleanD[0]
-        final.append(current[0]) #do it seperately to not get another set of brackets 
+        final.append(current[0]) 
         final.append(current[1])
         final.append(current[2])
+      
       else: #other visits, in the middle of a set 
         next = cleanD[i+1]
         current = cleanD[i]
@@ -298,12 +299,12 @@ def cleanDetects(listIn):
           else:
             final.append(current[1])
         final.append(current[2])
+      
       if len(final)>1: #clean empty detections
         finals.append(final)
-    #if len(finals) > 0: #uncomment this if grouping by individual 
-      #cleanV.appenf(finals)
-  return finals #return finals if getting all visits together
-  #return cleanV
+
+  return finals 
+
 
 def makeCW(corners):
     '''takes the corners that openCV generates and puts them in the 
@@ -317,13 +318,14 @@ def makeCW(corners):
       
 ##------------------where the magic happens----------------
 
-frameFile = r'C:/Users/lqmey/OneDrive/Desktop/Bee Videos/test in feild/22_6_22_vids/targetFrame.tiff'
-ff.main(frameFile,2,show_validation=False)
+#frameFile = r'C:/Users/lqmey/OneDrive/Desktop/Bee Videos/test in feild/22_6_22_vids/targetFrame.tiff'
+#ff.main(frameFile,2,show_validation=False)
 
 #configFile = 'flower_patch_config.json'
 
 def main(h5File,flowerConfigFile='flower_patch_config.json'):
-  '''writes to a json file all visit events given a h5 dataset'''
+  '''writes to a jvisits.son file all visit events given a h5 dataset and 
+  config file of flower patch info'''
   tracks = parseTrackData(h5File)
   flower_config = json.load(open(flowerConfigFile))
   detects = getAllVisits(tracks,flower_config)
@@ -334,5 +336,5 @@ def main(h5File,flowerConfigFile='flower_patch_config.json'):
   return 
 
 
-main(filename)
-print('ran')
+#main(filename)
+#print('ran')
