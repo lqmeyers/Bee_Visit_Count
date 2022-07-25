@@ -2,17 +2,12 @@
 #Luke Meyers 7/5/22
 
 
-import timeit as ti
+
 import numpy as np 
 import h5py
-import matplotlib.patches as ptch
-from regex import B
 import flowerFinder as ff 
-import cv2
 import json
 import math
-
-
 
 #filename = r"C:\Users\lqmey\Downloads\just_vid_7.analysis.h5.h"
 filename = r"C:\Users\lqmey\Downloads\validation_22_22_6.analysis.h5.h"
@@ -49,15 +44,6 @@ for i, name in enumerate(node_names):
   print(f'{i}: {name}')
   print()
 #"""
-
-trackFirst = parseTrackData(filename)
-
-'''
-check = trackFirst[71]
-for i in range(len(check[:,3,:])):
-  if np.isnan(check[i,3,0]) == False:
-    print(i,check[i,3,:])
-'''
 
 
 def insideBox(coord,center,bound=50):
@@ -179,19 +165,6 @@ def insideRotRect(coord,corner1,corner2,corner3,corner4):
             return False 
     
 
-#c1 = (6,1)
-#c2 = (1,1)
-#c3 = (1,6)
-#c4 = (6,6)
-#cInq = (0,3)
-#print(insideRotRect(cInq,c1,c2,c3,c4))
-
-#print(insideCircle([50,50],[0,0]))
-
-#"""
-#print('time for insidecircle to run',ti.timeit(setup=setup,stmt=my_code,number=100000))
-#print('Time for insidebox to run',ti.timeit(setup=setup,stmt=myBox,number=100000))
-
 def expandRect(coordsIn,buffer):
     '''expands a rectangle buffer distance from each side
     when given corner coordinates given as a list'''
@@ -256,26 +229,13 @@ def getAllVisits(data,flower_config):
     out = out+i 
   return out 
 
-'''
-test = np.zeros(shape=(5,2))
-test[2] = [3,4]
-test[3]= [nan,nan]
-cTest = test[~np.isnan(test)]
-print(cTest)
-'''
-#print('Time for DetectHead with Circles to run',ti.timeit(setup=setup,stmt=my_Circle,number=100000))
-#print('Time for DetectHead with Circles to run',ti.timeit(setup=setup,stmt=my_Circle,number=100000))
-#print(detects)
-
 def groupBy2(listIn,metadata):
   '''takes a list in and groups items into sets of 2 '''
   listOut = []
   for i in range(len(listIn))[0:len(listIn):2]:
     listOut.append([listIn[i],listIn[i+1],metadata])
   return (listOut)
-    
-#testL = [1,2,3,4,5,6]
-#print(groupBy2(testL))
+
   
 def makeDict(listIn):
   '''takes list output of cleanDetects and turns into dictionary 
@@ -287,9 +247,6 @@ def makeDict(listIn):
                   'track_id':listIn[i][2][0],
                   'flower_id':listIn[i][2][1]}
   return dictOut
-
-
-
 
 
 def cleanDetects(listIn):
@@ -363,23 +320,19 @@ def makeCW(corners):
 frameFile = r'C:/Users/lqmey/OneDrive/Desktop/Bee Videos/test in feild/22_6_22_vids/targetFrame.tiff'
 ff.main(frameFile,2,show_validation=False)
 
-configFile = 'flower_patch_config.json'
+#configFile = 'flower_patch_config.json'
 
-flower_config = json.load(open(configFile))
+def main(h5File,flowerConfigFile='flower_patch_config.json'):
+  '''writes to a json file all visit events given a h5 dataset'''
+  tracks = parseTrackData(h5File)
+  flower_config = json.load(open(flowerConfigFile))
+  detects = getAllVisits(tracks,flower_config)
+  cleanDetect = cleanDetects(detects)
+  results = makeDict(cleanDetect)
+  with open('visits.json','w') as f:
+    json.dump(results,f,indent=3)
+  return 
 
 
-detects = getAllVisits(trackFirst,flower_config)
-cleanDetect = cleanDetects(detects)
-print(makeDict(cleanDetect))
-
+main(filename)
 print('ran')
-
-
-'''
-#some data exploration 
-print(trackSecond.shape)
-for i in range(len(trackSecond[:,0,0,0])):
-  print(i)
-  print(trackSecond[i,:,3,:])
-
-'''

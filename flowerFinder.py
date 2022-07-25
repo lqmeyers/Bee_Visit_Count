@@ -6,8 +6,6 @@ import numpy as np
 import cv2
 import json
 
-from sklearn.random_projection import johnson_lindenstrauss_min_dim
-
 #vidFile = r"C:\Users\lqmey\OneDrive\Desktop\Bee Videos\test in feild\20_6_22_vids\fixed2x6_20_22_test.mp4"
 #imgFile = r'C:/Users/lqmey/OneDrive/Desktop/Bee Videos/test in feild/22_6_22_vids/targetFrame.tiff'
 
