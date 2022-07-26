@@ -8,7 +8,7 @@ import json
 import math
 
 #filename = r"C:\Users\lqmey\Downloads\just_vid_7.analysis.h5.h"
-#filename = r"C:\Users\lqmey\Downloads\validation_22_22_6.analysis.h5.h"
+filename = r"C:\Users\lqmey\Downloads\validation_22_22_6.analysis.h5.h"
 
 def parseTrackData(file):
   with h5py.File(file,'r') as f:
@@ -238,15 +238,26 @@ def groupBy2(listIn,metadata):
   return (listOut)
 
   
-def makeDict(listIn):
+def makeDict(listIn,mode='visits'):
   '''takes list output of cleanDetects and turns into dictionary 
   to prepare for writing to json'''
   dictOut = {}
-  for i in range(len(listIn)):
-    dictOut[i] = {'start_frame':listIn[i][0],
-                  'end_frame':listIn[i][1],
-                  'track_id':listIn[i][2][0],
-                  'flower_id':listIn[i][2][1]}
+  if mode == 'visits':
+    for i in range(len(listIn)):
+      dictOut[i] = {'start_frame':listIn[i][0],
+                    'end_frame':listIn[i][1],
+                    'track_id':listIn[i][2][0],
+                    'flower_id':listIn[i][2][1]}
+  else:
+    dictOut= {'Visits_per_Flower':{},'Visits_per_Individual':{}}
+    flowerList = range(len(listIn[0]))
+    for i in flowerList:
+      dictOut['Visits_per_Flower'][i] = listIn[0][i]
+    
+    for i in range(len(listIn[1])):
+      dictOut['Visits_per_Individual'][i] = {}
+      for f in flowerList:
+        dictOut['Visits_per_Individual'][i][f] = listIn[1][i][f]
   return dictOut
 
 
@@ -315,7 +326,17 @@ def makeCW(corners):
     cOut.append(corners[1])
     cOut.append(corners[0])
     return cOut
-      
+
+def getStats(listIn,flowerConfig,tracks):
+  '''makes a list with some relevant stats from cleanDetects
+  before it is converted to dictionary''' 
+  visitsPerFlower = np.zeros(shape=len(flowerConfig))
+  visitsPerInd = np.zeros(shape=(len(tracks),len(flowerConfig)))
+  for i in listIn:
+    visitsPerFlower[i[2][1]] =  visitsPerFlower[i[2][1]] + 1 #tallies using val as index
+    visitsPerInd[i[2][0]][i[2][1]] = visitsPerInd[i[2][0]][i[2][1]] + 1 
+  return [visitsPerFlower,visitsPerInd]
+
 ##------------------where the magic happens----------------
 
 #frameFile = r'C:/Users/lqmey/OneDrive/Desktop/Bee Videos/test in feild/22_6_22_vids/targetFrame.tiff'
@@ -329,12 +350,15 @@ def main(h5File,flowerConfigFile='flower_patch_config.json'):
   tracks = parseTrackData(h5File)
   flower_config = json.load(open(flowerConfigFile))
   detects = getAllVisits(tracks,flower_config)
-  cleanDetect = cleanDetects(detects)
-  results = makeDict(cleanDetect)
+  cleans = cleanDetects(detects)
+  statArray= getStats(cleans,flower_config,tracks)
+  statistics = (makeDict(statArray,'stats'))
+  results = makeDict(cleans)
+  fullDict = {'Visits':results,'Statistics':statistics}
   with open('visits.json','w') as f:
-    json.dump(results,f,indent=3)
+    json.dump(fullDict,f,indent=3)
   return 
 
 
-#main(filename)
-#print('ran')
+main(filename)
+print('ran')
