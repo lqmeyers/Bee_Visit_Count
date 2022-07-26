@@ -353,7 +353,6 @@ def main(h5File,flowerConfigFile='flower_patch_config.json'):
   detects = getAllVisits(tracks,flower_config)
   cleans = cleanDetects(detects)
   statArray= getStats(cleans,flower_config,tracks)
-  #display(statArray[1])
   statistics = makeDict(statArray,'stats')
   results = makeDict(cleans)
   fullDict = {'Visits':results,'Statistics':statistics}
@@ -361,17 +360,64 @@ def main(h5File,flowerConfigFile='flower_patch_config.json'):
     json.dump(fullDict,f,indent=3)
   return 
 
-def display(arrayIn,mode='per_Ind'):
-  '''creates tables to display data either in 
-  per individual mode or in per flower mode'''
-  if mode == 'per_Ind':
-    listIn = np.ndarray.tolist(arrayIn)
+'''Ok so initialally I wrote everything to be done as a single function, main, above. However
+when it came to displaying the data it became clear that a class would be necessary, even 
+though I was largely unfamilier with them. Visits class runs all necessary track analysis upon 
+initialization of the object, but various parts of the data can be accessed after the 
+analysis pipeline is run. Additionally data can be displayed or saved in various formats '''
+
+class visits:
+  def __init__(self,file,flowerConfigFile='flower_patch_config.json'):
+    self.file = file
+    self.configFile = flowerConfigFile
+    self.getTracks()
+    self.getVisits()
+    self.analyze()
+    self.writeJSON()
+  
+  def getTracks(self):
+    '''seperate tracks from h5'''
+    self.tracks = parseTrackData(self.file)
+  
+  def getVisits(self):
+    '''find all visit events from track data'''
+    self.tracks = parseTrackData(self.file)
+    self.patchConfig = json.load(open(self.configFile))
+    detects = getAllVisits(self.tracks,self.patchConfig)
+    self.visits = cleanDetects(detects)
+    self.visitDict = makeDict(self.visits)
+    self.total = len(self.visits)
+    return(self.visits)
+  
+  def analyze(self):
+    '''find some cumulative totals of visit events'''
+    self.statArray = getStats(self.visits,self.patchConfig,self.tracks)
+    self.statDict = makeDict(self.statArray,'stats')
+
+  def writeJSON(self):
+    '''write all visit info to visits.json'''
+    fullDict = {'Visits':self.visitDict,'Statistics':self.statDict}
+    with open('visits.json','w') as f:
+      json.dump(fullDict,f,indent=3)
+
+  ##add write to csv option!!!
+
+  def displayPerInd(self):
+    '''display table of total visits by individual'''
+    listIn = np.ndarray.tolist(self.statArray[1])
     listIn.insert(0,['Track ID','Visits to Flower 0','Visits to Flower 1'])
     print(tabulate(listIn,headers='firstrow',tablefmt='fancy_grid',showindex=True))
+  
+  def displayPerFlower(self):
+    '''display table of total visits by flower'''
+    for v in range(len(self.statDict['Visits_per_Flower'])):
+      self.statDict['Visits_per_Flower'][str(v)] = self.statDict['Visits_per_Flower'][str(v)]
+      self.statDict['Visits_per_Flower']['Flower '+str(v)] = self.statDict['Visits_per_Flower'].pop(str(v))
+    print(tabulate(self.statDict['Visits_per_Flower']))
 
 
 
 
-
-main(filename)
-print('ran')
+#vs = visits(filename)
+#vs.displayPerInd()
+#print('ran')
