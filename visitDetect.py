@@ -6,6 +6,7 @@ import h5py
 import flowerFinder as ff 
 import json
 import math
+from tabulate import tabulate
 
 #filename = r"C:\Users\lqmey\Downloads\just_vid_7.analysis.h5.h"
 filename = r"C:\Users\lqmey\Downloads\validation_22_22_6.analysis.h5.h"
@@ -352,12 +353,24 @@ def main(h5File,flowerConfigFile='flower_patch_config.json'):
   detects = getAllVisits(tracks,flower_config)
   cleans = cleanDetects(detects)
   statArray= getStats(cleans,flower_config,tracks)
-  statistics = (makeDict(statArray,'stats'))
+  #display(statArray[1])
+  statistics = makeDict(statArray,'stats')
   results = makeDict(cleans)
   fullDict = {'Visits':results,'Statistics':statistics}
   with open('visits.json','w') as f:
     json.dump(fullDict,f,indent=3)
   return 
+
+def display(arrayIn,mode='per_Ind'):
+  '''creates tables to display data either in 
+  per individual mode or in per flower mode'''
+  if mode == 'per_Ind':
+    listIn = np.ndarray.tolist(arrayIn)
+    listIn.insert(0,['Track ID','Visits to Flower 0','Visits to Flower 1'])
+    print(tabulate(listIn,headers='firstrow',tablefmt='fancy_grid',showindex=True))
+
+
+
 
 
 main(filename)
