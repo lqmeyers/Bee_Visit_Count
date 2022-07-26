@@ -102,8 +102,9 @@ def getCorners(rotRect):
 #print(box)
 
 
-#results = (main(imgFile,2))
 
+
+#results = (main(imgFile,2))
 #json_string = json.dumps(results,indent=3)
 #print(json_string)
 

@@ -8,8 +8,6 @@ import json
 import math
 from tabulate import tabulate
 
-#filename = r"C:\Users\lqmey\Downloads\just_vid_7.analysis.h5.h"
-filename = r"C:\Users\lqmey\Downloads\validation_22_22_6.analysis.h5.h"
 
 def parseTrackData(file):
   with h5py.File(file,'r') as f:
@@ -340,6 +338,9 @@ def getStats(listIn,flowerConfig,tracks):
 
 ##------------------where the magic happens----------------
 
+#filename = r"C:\Users\lqmey\Downloads\just_vid_7.analysis.h5.h"
+#filename = r"C:\Users\lqmey\Downloads\validation_22_22_6.analysis.h5.h"
+
 #frameFile = r'C:/Users/lqmey/OneDrive/Desktop/Bee Videos/test in feild/22_6_22_vids/targetFrame.tiff'
 #ff.main(frameFile,2,show_validation=False)
 
@@ -410,14 +411,15 @@ class visits:
   
   def displayPerFlower(self):
     '''display table of total visits by flower'''
-    for v in range(len(self.statDict['Visits_per_Flower'])):
-      self.statDict['Visits_per_Flower'][str(v)] = self.statDict['Visits_per_Flower'][str(v)]
-      self.statDict['Visits_per_Flower']['Flower '+str(v)] = self.statDict['Visits_per_Flower'].pop(str(v))
-    print(tabulate(self.statDict['Visits_per_Flower']))
+    flowerDict = self.statDict['Visits_per_Flower']
+    for v in range(len(flowerDict)):
+      flowerDict[v] = [flowerDict[v]]
+      flowerDict['Flower '+str(v)] = flowerDict.pop(v)
+    print(tabulate(flowerDict,headers='keys',tablefmt='fancy_grid'))
 
 
 
 
 #vs = visits(filename)
-#vs.displayPerInd()
+#vs.displayPerFlower()
 #print('ran')
