@@ -339,7 +339,7 @@ def getStats(listIn,flowerConfig,tracks):
 ##------------------where the magic happens----------------
 
 #filename = r"C:\Users\lqmey\Downloads\just_vid_7.analysis.h5.h"
-#filename = r"C:\Users\lqmey\Downloads\validation_22_22_6.analysis.h5.h"
+filename = r"C:\Users\lqmey\Downloads\validation_22_22_6.analysis.h5.h"
 
 #frameFile = r'C:/Users/lqmey/OneDrive/Desktop/Bee Videos/test in feild/22_6_22_vids/targetFrame.tiff'
 #ff.main(frameFile,2,show_validation=False)

@@ -7,7 +7,7 @@ import cv2
 import json
 
 #vidFile = r"C:\Users\lqmey\OneDrive\Desktop\Bee Videos\test in feild\20_6_22_vids\fixed2x6_20_22_test.mp4"
-imgFile = r'C:/Users/lqmey/OneDrive/Desktop/Bee Videos/test in feild/22_6_22_vids/targetFrame.tiff'
+#imgFile = r'C:/Users/lqmey/OneDrive/Desktop/Bee Videos/test in feild/22_6_22_vids/targetFrame.tiff'
 
 def main(file,flowerNum,show_validation=True):
     '''recieves image file and finds coords of flowerNum # of flowers. If mode = center
@@ -72,6 +72,7 @@ def main(file,flowerNum,show_validation=True):
             for p in flowerDict[f]['corners']:
                 smaller = cv2.circle(smaller,(int(p[0]/unscale),int(p[1]/unscale)),4, (0,255,255), -1)
         cv2.imshow('display',smaller)
+        cv2.setWindowProperty('display',cv2.WND_PROP_TOPMOST,1)
         cv2.waitKey()
         #cv2.destroyAllWindows()
 
@@ -104,7 +105,7 @@ def getCorners(rotRect):
 
 
 
-results = (main(imgFile,2))
+#results = (main(imgFile,2))
 #json_string = json.dumps(results,indent=3)
 #print(json_string)
 
