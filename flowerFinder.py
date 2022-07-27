@@ -7,9 +7,9 @@ import cv2
 import json
 
 #vidFile = r"C:\Users\lqmey\OneDrive\Desktop\Bee Videos\test in feild\20_6_22_vids\fixed2x6_20_22_test.mp4"
-#imgFile = r'C:/Users/lqmey/OneDrive/Desktop/Bee Videos/test in feild/22_6_22_vids/targetFrame.tiff'
+imgFile = r'C:/Users/lqmey/OneDrive/Desktop/Bee Videos/test in feild/22_6_22_vids/targetFrame.tiff'
 
-def main(file,flowerNum,show_validation=True):
+def main(file,flowerNum,show_validation=True,run_on_colab='False'):
     '''recieves image file and finds coords of flowerNum # of flowers. If mode = center
     returns center coords, else corners. If show validation = True will plot
     and display results on image'''
@@ -71,9 +71,14 @@ def main(file,flowerNum,show_validation=True):
         for f in range(len(flowerDict)):
             for p in flowerDict[f]['corners']:
                 smaller = cv2.circle(smaller,(int(p[0]/unscale),int(p[1]/unscale)),4, (0,255,255), -1)
-        cv2.imshow('display',smaller)
-        cv2.setWindowProperty('display',cv2.WND_PROP_TOPMOST,1)
-        cv2.waitKey()
+        if run_on_colab == False:
+            cv2.imshow('display',smaller)
+            cv2.setWindowProperty('display',cv2.WND_PROP_TOPMOST,1)
+            cv2.waitKey()
+        elif run_on_colab == True:
+            from google.colab.patches import cv2_imshow
+            cv2_imshow(smaller)
+
         #cv2.destroyAllWindows()
 
     with open('flower_patch_config.json','w') as f:
