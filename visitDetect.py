@@ -9,6 +9,8 @@ import math
 from tabulate import tabulate
 
 
+#filename = r'C:\Users\lqmey\Downloads\fixed3x6_22_22_test.mp4.predictions.analysis.h5.000_fixed3x6_22_22_test.analysis.h5'
+
 def parseTrackData(file):
   with h5py.File(file,'r') as f:
     #dset_names = list(f.keys())
@@ -194,11 +196,17 @@ def detectVisit(waistCoords,corners):
     c3 = corners[2]
     c4 = corners[3]
     for i in range(len(waistCoords)):
+        #if insideRotRect(waistCoords[i],c1,c2,c3,c4) == True:
+          #print('detected on flower at ',i)
         if i == 0: #first frame 
           if insideRotRect(waistCoords[i],c1,c2,c3,c4) == True:
             iOut.append(i)
-        elif i == len(waistCoords)-1: #last frame 
+        elif i == len(waistCoords)-1 or i == len(waistCoords): #last frame 
           if insideRotRect(waistCoords[i],c1,c2,c3,c4) == True:
+            #print('LAST FRAME DETECT')
+            iOut.append(i)
+          if insideRotRect(waistCoords[i],c1,c2,c3,c4) == False and insideRotRect(waistCoords[i-1],c1,c2,c3,c4) == True:
+            print('LAST FRAME DETECT')
             iOut.append(i)
         else: 
           if insideRotRect(waistCoords[i],c1,c2,c3,c4) == True and insideRotRect(waistCoords[i-1],c1,c2,c3,c4)==False:
@@ -219,12 +227,14 @@ def getAllVisits(data,flower_config):
     justHead = justHead[:,3,:] 
     for f in range(len(flower_config)):
       found = detectVisit(justHead,makeCW(expandRect(flower_config[str(f)]['corners'],30)))
+      #print(b,' ',found)
       #print('bee #',b,'at flower',f,'=',found)
       #print(np.array(found))
       if len(found) > 0:
         found = groupBy2(found,[b,f])#{'bee':b,'flower':f}) #groups into start and end frame sets
         all[f].append(found)
         #all= 1
+  
   for i in all:
     out = out+i 
   return out 
@@ -339,10 +349,12 @@ def getStats(listIn,flowerConfig,tracks):
 ##------------------where the magic happens----------------
 
 #filename = r"C:\Users\lqmey\Downloads\just_vid_7.analysis.h5.h"
-filename = r"C:\Users\lqmey\Downloads\validation_22_22_6.analysis.h5.h"
+#filename = r"C:\Users\lqmey\Downloads\validation_22_22_6.analysis.h5.h"
+filename = r'C:\Users\lqmey\Downloads\fixed3x6_22_22_test.mp4.predictions.analysis.h5.000_fixed3x6_22_22_test.analysis.h5'
 
 #frameFile = r'C:/Users/lqmey/OneDrive/Desktop/Bee Videos/test in feild/22_6_22_vids/targetFrame.tiff'
-#ff.main(frameFile,2,show_validation=False)
+frameFile = r"C:\Users\lqmey\OneDrive\Desktop\Bee_Visit_Count\Images\targetFrame.tiff"
+ff.main(frameFile,2,show_validation=True)
 
 #configFile = 'flower_patch_config.json'
 
@@ -372,6 +384,9 @@ class visits:
     self.file = file
     self.configFile = flowerConfigFile
     self.getTracks()
+    #flower_config = json.load(open(flowerConfigFile))
+    #print(detectVisit(self.tracks[376],makeCW(expandRect(flower_config[str(0)]['corners'],30))))
+    #print(detectVisit(self.tracks[376],makeCW(expandRect(flower_config[str(1)]['corners'],30))))
     self.getVisits()
     self.analyze()
     self.writeJSON()
@@ -379,6 +394,7 @@ class visits:
   def getTracks(self):
     '''seperate tracks from h5'''
     self.tracks = parseTrackData(self.file)
+   
   
   def getVisits(self):
     '''find all visit events from track data'''
@@ -417,8 +433,16 @@ class visits:
       flowerDict['Flower '+str(v)] = flowerDict.pop(v)
     print(tabulate(flowerDict,headers='keys',tablefmt='fancy_grid'))
 
+'''
+#data = parseTrackData(filename)
+print(data.shape)
 
-
+file = open('track_coords.txt','w') #write to txt file to see actual coords per track 
+for f in range(len(data[380])):
+  file.write('frame '+str(f)+' coords = '+str(data[377,f,3,:])+u'\n')
+file.close()
+print('written')
+'''
 
 #vs = visits(filename)
 #vs.displayPerFlower()
