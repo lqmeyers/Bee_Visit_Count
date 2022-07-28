@@ -132,5 +132,6 @@ dmypy.json
 ##-------------------------- Things I added ---------------------
 
 *.json
-*.tiff
 *.txt
+
+Images/
