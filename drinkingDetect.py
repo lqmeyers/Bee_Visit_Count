@@ -8,16 +8,21 @@ import h5py
 import matplotlib.patches as ptch
 import flowerFinder as ff 
 import cv2
+import json
+from tabulate import tabulate
 
 
 #filename = r"C:\Users\lqmey\Downloads\just_vid_7.analysis.h5.h"
-filename = r"C:\Users\lqmey\Downloads\validation_22_22_6.analysis.h5.h"
+#filename = r"C:\Users\lqmey\Downloads\validation_22_22_6.analysis.h5.h"
+filename = r'C:\Users\lqmey\Downloads\fixed3x6_22_22_test.mp4.predictions.analysis.h5.000_fixed3x6_22_22_test.analysis.h5'
 
-
-with h5py.File(filename,'r') as f:
-  dset_names = list(f.keys())
-  locations = f['tracks'][:].T
-  node_names = [n.decode() for n in f['node_names'][:]]
+def parseTrackData(file):
+  with h5py.File(file,'r') as f:
+    #dset_names = list(f.keys())
+    locations = f['tracks'][:].T
+    #node_names = [n.decode() for n in f['node_names'][:]]
+  trackFirst = np.moveaxis(locations,-1,0) #groups by track id
+  return trackFirst
 
 
 """ #some info about the h5 dataset 
@@ -44,13 +49,9 @@ for i, name in enumerate(node_names):
   print()
 #"""
 
-trackFirst = np.moveaxis(locations,-1,0) #move axis I think will do the trick 
+#trackFirst = np.moveaxis(locations,-1,0) #move axis I think will do the trick 
 #print(trackFirst[0])
 
-setup = """
-import matplotlib.patches as ptch
-"""
-#myBox="""
 def insideBox(coords,center):
   '''returns true if inside, returns false if not'''
   #center = [1380,480]
@@ -78,8 +79,7 @@ def insideBox(coords,center):
     return False
   else: 
     return True 
-#"""
-#my_code = """ 
+
 def insideCircle(coords,center):
   '''returns true if coords inside circle at center, false if not'''
   bound = 50
@@ -91,8 +91,6 @@ def insideCircle(coords,center):
     return True 
   else:
     return False 
-
-#print(insideCircle([50,50],[0,0]))
 
 
 #"""
@@ -125,7 +123,7 @@ def detectHead(headCoords,center,mode='box'):
       else:
         print('unaccepted mode!')
         break
-    print(iOut)
+    #print(iOut)
     return iOut#,cOut 
 
 
@@ -134,67 +132,59 @@ longer than 15 frames, seperated by at least 5 frames from other visits '''
 
 #print(trackFirst[1].shape)
 
-def getAll(data,center1,center2):
+
+
+def getAll(data,flower_config):
   '''gets all frame indicies where a bee is in the right spot'''
-  allWhite = [] 
-  allBlue = []
+  all = [] 
+  out = []
+  for i in range(len(flower_config)):
+    all.append([])
   for b in range(len(data)):
     justHead = data[b]
     justHead = justHead[:,3,:] 
-    #found = detectHead(justHead,center1)
-    #print('flower1 box bee #',b)
-    found = detectHead(justHead,center1,'circle')
-    #print('flower1 circle bee #',b)
-    if len(found) > 0:
-      allWhite.append(found)
-    #found = detectHead(justHead,center2)
-    #print('flower2 box bee #',b)
-    found = detectHead(justHead,center2,'circle')
-    #print('flower2 circle bee #',b)
-    if len(found) > 0:
-      allBlue.append(found)
-  return allWhite+allBlue
+    for f in range(len(flower_config)):
+      found = detectHead(justHead,(flower_config[str(f)]['center']),'circle')
+      #print(b,' ',found)
+      #print('bee #',b,'at flower',f,'=',found)
+      #print(np.array(found))
+      if len(found) > 0:
+        found = groupBy2(found,[b,f])#{'bee':b,'flower':f}) #groups into start and end frame sets
+        #print(found)
+        all[f].append(found)
+        #all= 1
+  
+  for i in all:
+    out = out+i 
+  return out 
 
 
-'''
-test = np.zeros(shape=(5,2))
-test[2] = [3,4]
-test[3]= [nan,nan]
-cTest = test[~np.isnan(test)]
-print(cTest)
-'''
-#print('Time for DetectHead with Circles to run',ti.timeit(setup=setup,stmt=my_Circle,number=100000))
-#print('Time for DetectHead with Circles to run',ti.timeit(setup=setup,stmt=my_Circle,number=100000))
-#print(detects)
-
-def groupBy2(listIn):
+def groupBy2(listIn,metadata):
   '''takes a list in and groups items into sets of 2 '''
   listOut = []
   for i in range(len(listIn))[0:len(listIn):2]:
-    listOut.append([listIn[i],listIn[i+1]])
-  return listOut
-    
+    listOut.append([listIn[i],listIn[i+1],metadata])
+  return (listOut)
+
+  
 #testL = [1,2,3,4,5,6]
 #print(groupBy2(testL))
   
 
 def cleanDetects(listIn):
   '''Cleans list to get final indexes of visits. First filters detections to make 
-  sure they last longer than 5 frames, then it checks list and makes sure visits are at least 5 
+  sure they last longer than 15 frames, then it checks list and makes sure visits are at least 5 
   frames apart, and if not, it combines them. Output as one long list of all recorded visits'''
-  cleanV = []
   finals = [] #put finals here to get all visits appended together 
   for l in listIn:
-    d = groupBy2(l) #groups into start and end frame sets
     cleanD = []
-    for de in d:
+    for de in l:
       if de[1] - de[0] > 15:
         cleanD.append(de) #only keeps visits longer than 5 frames 
-    #print(cleanD)
-     #finals = [] #put it here to keep visits grouped by track/individual 
+
     for i in range(len(cleanD)): #cleans through to make sure visits are seperate
       final = [] 
-      #print(i)
+     
       if i == 0 and len(cleanD) > 1: #first visit in list, no previous 
         current = cleanD[i]
         next = cleanD[i+1]
@@ -203,16 +193,22 @@ def cleanDetects(listIn):
           final.append(next[1])
         else:
           final.append(current[1])
+        final.append(current[2])
+
       elif i == (len(cleanD)-1) and len(cleanD)>1: #last visit in list, don't need to check after 
         current = cleanD[i]
         past = cleanD[i-1]
         if current[0] > past[1]+5:
           final.append(current[0])
           final.append(current[1])
+        final.append(current[2])
+
       elif len(cleanD) == 1: #if only one visit for individual 
         current= cleanD[0]
-        final.append(current[0]) #do it seperately to not get another set of brackets 
+        final.append(current[0]) 
         final.append(current[1])
+        final.append(current[2])
+      
       else: #other visits, in the middle of a set 
         next = cleanD[i+1]
         current = cleanD[i]
@@ -223,40 +219,99 @@ def cleanDetects(listIn):
             final.append(next[1])
           else:
             final.append(current[1])
-      if len(final)>0: #clean empty detections
-        finals.append(final)
-    #if len(finals) > 0: #uncomment this if grouping by individual 
-      #cleanV.appenf(finals)
-  return finals #return finals if getting all visits together
-  #return cleanV
-        
+        final.append(current[2])
       
+      if len(final)>1: #clean empty detections
+        finals.append(final)
+
+  return finals 
+
+ 
+def makeDict(listIn,mode='drinking'):
+  '''takes list output of cleanDetects and turns into dictionary 
+  to prepare for writing to json'''
+  dictOut = {}
+  if mode == 'drinking':
+    for i in range(len(listIn)):
+      dictOut[i] = {'start_frame':listIn[i][0],
+                    'end_frame':listIn[i][1],
+                    'track_id':listIn[i][2][0],
+                    'flower_id':listIn[i][2][1]}
+  else:
+    dictOut= {'Drinks_per_Flower':{},'Drinks_per_Individual':{}}
+    flowerList = range(len(listIn[0]))
+    for i in flowerList:
+      dictOut['Drinks_per_Flower'][i] = listIn[0][i]
+    
+    for i in range(len(listIn[1])):
+      dictOut['Drinks_per_Individual'][i] = {}
+      for f in flowerList:
+        dictOut['Drinks_per_Individual'][i][f] = listIn[1][i][f]
+  return dictOut       
+
+def getStats(listIn,flowerConfig,tracks):
+  '''makes a list with some relevant stats from cleanDetects
+  before it is converted to dictionary''' 
+  drinksPerFlower = np.zeros(shape=len(flowerConfig))
+  drinksPerInd = np.zeros(shape=(len(tracks),len(flowerConfig)))
+  for i in listIn:
+    drinksPerFlower[i[2][1]] =  drinksPerFlower[i[2][1]] + 1 #tallies using val as index
+    drinksPerInd[i[2][0]][i[2][1]] = drinksPerInd[i[2][0]][i[2][1]] + 1 
+  return [drinksPerFlower,drinksPerInd]
+
 ##------------------where the magic happens----------------
-#whiteFlower =  [1380,480] #use these for file 5
-#blueFlower = [630,550]
 
-frameFile = r'C:/Users/lqmey/OneDrive/Desktop/Bee Videos/test in feild/22_6_22_vids/targetFrame.tiff' 
+class drinks:
+  def __init__(self,file,flowerConfigFile='flower_patch_config.json'):
+    self.file = file
+    self.configFile = flowerConfigFile
+    self.getTracks()
+    self.getDrinks()
+    self.analyze()
+    self.writeJSON()
+  
+  def getTracks(self):
+    '''seperate tracks from h5'''
+    self.tracks = parseTrackData(self.file)
+   
+  
+  def getDrinks(self):
+    '''find all visit events from track data'''
+    self.tracks = parseTrackData(self.file)
+    self.patchConfig = json.load(open(self.configFile))
+    detects = getAll(self.tracks,self.patchConfig)
+    self.drinks = cleanDetects(detects)
+    self.drinkDict = makeDict(self.drinks)
+    self.total = len(self.drinks)
+    return(self.drinks)
+  
+  def analyze(self):
+    '''find some cumulative totals of visit events'''
+    self.statArray = getStats(self.drinks,self.patchConfig,self.tracks)
+    self.statDict = makeDict(self.statArray,'stats')
 
-autoCenters = ff.main(frameFile,'center',show_validation=False)
-whiteCenter = autoCenters[0]
-blueCenter = autoCenters[1]
+  def writeJSON(self):
+    '''write all visit info to visits.json'''
+    fullDict = {'Visits':self.drinkDict,'Statistics':self.statDict}
+    with open('drinks.json','w') as f:
+      json.dump(fullDict,f,indent=3)
 
-trackFirst = np.moveaxis(locations,-1,0)
-#trackSecond = np.moveaxis(locations,-1,1)
+  ##add write to csv option!!!
 
-#whiteFlower = [535,675] #manually annotated points
-#blueFlower = [1345,595]
-#detects = getAll(trackFirst,whiteFlower,blueFlower)
-detects = getAll(trackFirst,whiteCenter,blueCenter)
-cleanDetect = cleanDetects(detects)
-print(len(cleanDetect))
-#print(cleanDetect)
-print('ran')
+  def displayPerInd(self):
+    '''display table of total drinks by individual'''
+    listIn = np.ndarray.tolist(self.statArray[1])
+    listIn.insert(0,['Track ID','Drinking Events at Flower 0','Drinking Events at Flower 1'])
+    print(tabulate(listIn,headers='firstrow',tablefmt='fancy_grid',showindex=True))
+  
+  def displayPerFlower(self):
+    '''display table of total drinks by flower'''
+    flowerDict = self.statDict['Drinks_per_Flower']
+    for v in range(len(flowerDict)):
+      flowerDict[v] = [flowerDict[v]]
+      flowerDict['Flower '+str(v)] = flowerDict.pop(v)
+    print(tabulate(flowerDict,headers='keys',tablefmt='fancy_grid'))
 
-'''
-#some data exploration 
-print(trackSecond.shape)
-for i in range(len(trackSecond[:,0,0,0])):
-  print(i)
-  print(trackSecond[i,:,3,:])
-  '''
+
+d = drinks(filename)
+d.displayPerFlower()
