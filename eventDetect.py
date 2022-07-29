@@ -14,13 +14,22 @@ import drinkingDetect as dd
 #filename = r'C:\Users\lqmey\Downloads\fixed3x6_22_22_test.mp4.predictions.analysis.h5.000_fixed3x6_22_22_test.analysis.h5'
 #filename = filename = r"C:\Users\lqmey\Downloads\validation_22_22_6.analysis.h5.h"
 
+def parseTrackData(file):
+  with h5py.File(file,'r') as f:
+    #dset_names = list(f.keys())
+    locations = f['tracks'][:].T
+    #node_names = [n.decode() for n in f['node_names'][:]]
+  trackFirst = np.moveaxis(locations,-1,0) #groups by track id
+  return trackFirst
+
+
 class events:
     def __init__(self,file,FlowerConfigFile='flower_patch_config.json'):
         print('initializing')
         self.file = file 
         self.configFile = FlowerConfigFile
         self.patchConfig = json.load(open(self.configFile))
-        self.tracks = vd.visits(self.file).getTracks()
+        self.tracks = self.getTracks(self.file)
         print('track array shape = ',self.tracks.shape)
         print('finding visits')
         self.visits = vd.visits(self.file).getVisits()
@@ -30,7 +39,13 @@ class events:
         self.analyze()
         print('writing output')
         self.writeJSON()
-        
+
+    def getTracks(self):
+        '''seperate tracks from h5'''
+        self.tracks = parseTrackData(self.file)
+        return self.tracks
+   
+   
     def analyze(self):
         '''gets useful cumulative numbers'''
         self.visitStatArray = vd.getStats(self.visits,self.patchConfig,self.tracks)
