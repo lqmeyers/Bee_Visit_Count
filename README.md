@@ -3,4 +3,4 @@ This repository contains a pipeline to extract event statistics like bee visits 
 
 [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1lcppKrnbxGmJelXcuitNfclOW8_JdvEe?usp=sharing)
 
-![](https://github.com/lqmeyers/Bee_Visit_Count/blob/main/Images/targetFrame.tiff)
+![](https://github.com/lqmeyers/Bee_Visit_Count/blob/main/Images/Demo_of_bounds.jpg)
