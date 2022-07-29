@@ -394,6 +394,7 @@ class visits:
   def getTracks(self):
     '''seperate tracks from h5'''
     self.tracks = parseTrackData(self.file)
+    return self.tracks
    
   
   def getVisits(self):

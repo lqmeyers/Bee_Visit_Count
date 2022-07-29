@@ -292,7 +292,7 @@ class drinks:
 
   def writeJSON(self):
     '''write all visit info to visits.json'''
-    fullDict = {'Visits':self.drinkDict,'Statistics':self.statDict}
+    fullDict = {'Drinking_Events':self.drinkDict,'Statistics':self.statDict}
     with open('drinks.json','w') as f:
       json.dump(fullDict,f,indent=3)
 
@@ -313,5 +313,5 @@ class drinks:
     print(tabulate(flowerDict,headers='keys',tablefmt='fancy_grid'))
 
 
-d = drinks(filename)
-d.displayPerFlower()
+#d = drinks(filename)
+#d.displayPerFlower()

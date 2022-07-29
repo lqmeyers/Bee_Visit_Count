@@ -2,14 +2,17 @@
 #Luke Meyers 7/11/22
 
 
+from re import S
 import numpy as np 
 import cv2
 import json
 
 #vidFile = r"C:\Users\lqmey\OneDrive\Desktop\Bee Videos\test in feild\20_6_22_vids\fixed2x6_20_22_test.mp4"
-imgFile = r'C:/Users/lqmey/OneDrive/Desktop/Bee Videos/test in feild/22_6_22_vids/targetFrame.tiff'
+#imgFile = r'C:/Users/lqmey/OneDrive/Desktop/Bee Videos/test in feild/22_6_22_vids/targetFrame.tiff'
+#imgFile = r'C:\Users\lqmey\OneDrive\Desktop\Bee_Visit_Count\Images\targetFrame.tiff'
 
-def main(file,flowerNum,show_validation=True,run_on_colab='False'):
+
+def main(file,flowerNum,show_validation=True,run_on_colab=False):
     '''recieves image file and finds coords of flowerNum # of flowers. If mode = center
     returns center coords, else corners. If show validation = True will plot
     and display results on image'''
@@ -110,7 +113,7 @@ def getCorners(rotRect):
 
 
 
-#results = (main(imgFile,2))
+#results = (main(imgFile,2,show_validation=True))
 #json_string = json.dumps(results,indent=3)
 #print(json_string)
 
