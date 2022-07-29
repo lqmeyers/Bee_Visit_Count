@@ -29,7 +29,7 @@ class events:
         self.file = file 
         self.configFile = FlowerConfigFile
         self.patchConfig = json.load(open(self.configFile))
-        self.tracks = self.getTracks(self.file)
+        self.tracks = self.getTracks()
         print('track array shape = ',self.tracks.shape)
         print('finding visits')
         self.visits = vd.visits(self.file).getVisits()
