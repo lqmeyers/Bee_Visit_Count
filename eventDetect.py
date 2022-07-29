@@ -12,7 +12,7 @@ import visitDetect as vd
 import drinkingDetect as dd 
 
 #filename = r'C:\Users\lqmey\Downloads\fixed3x6_22_22_test.mp4.predictions.analysis.h5.000_fixed3x6_22_22_test.analysis.h5'
-filename = filename = r"C:\Users\lqmey\Downloads\validation_22_22_6.analysis.h5.h"
+#filename = filename = r"C:\Users\lqmey\Downloads\validation_22_22_6.analysis.h5.h"
 
 class events:
     def __init__(self,file,FlowerConfigFile='flower_patch_config.json'):
@@ -94,6 +94,6 @@ class events:
             combinedList.insert(0,['Track ID','Visits to Flower 0','Visits to Flower 1','Drinks at Flower 0','Drinks at Flower 1'])
             print(tabulate(combinedList,headers='firstrow',tablefmt='fancy_grid',showindex=True))
     
-e = events(filename)
-e.displayEvents(mode='perInd')
+#e = events(filename)
+#e.displayEvents(mode='perInd')
 
