@@ -32,9 +32,9 @@ class events:
         self.tracks = self.getTracks()
         print('track array shape = ',self.tracks.shape)
         print('finding visits')
-        self.visits = vd.visits(self.file).getVisits()
+        self.visits = vd.visits(self.file).visits
         print('finding drinking bees')
-        self.drinks = dd.drinks(self.file).getDrinks()
+        self.drinks = dd.drinks(self.file).drinks
         #print(self.drinks)
         self.analyze()
         print('writing output')
