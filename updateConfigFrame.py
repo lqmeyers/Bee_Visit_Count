@@ -3,7 +3,7 @@
 
 import cv2
 
-vidFile = r"C:\Users\lqmey\OneDrive\Desktop\Bee Videos\test in feild\22_6_22_vids\fixed3x6_22_22_test.mp4"
+vidFile = r"C:\Users\lqmey\OneDrive\Desktop\Bee Videos\test in feild\22_6_22_vids\fixed2x6_22_22_test.mp4"
 frameFile = r'C:\Users\lqmey\OneDrive\Desktop\Bee_Visit_Count\Images\targetFrame.tiff'
 
 cap = cv2.VideoCapture(vidFile)

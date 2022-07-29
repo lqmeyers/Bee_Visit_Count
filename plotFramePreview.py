@@ -74,8 +74,8 @@ def update(cap,id):
 fid = 3425#rect2 = ptch.Rectangle((590,480),100,100,fill=False,lw=1) #set frame id that will be changed 
 getFrame(cap,fid) #writes to frameFile 
 
-whiteCenter = ff.main(frameFile,'center',show_validation=False)[0]
-blueCenter = ff.main(frameFile,'center',show_validation=False)[1]
+whiteCenter = ff.main(frameFile,2,'center',show_validation=False)[0]
+blueCenter = ff.main(frameFile,2,'center',show_validation=False)[1]
 
 #---generate figure and show 
 fig, ax = plt.subplots()
