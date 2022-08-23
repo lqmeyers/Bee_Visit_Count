@@ -4,3 +4,5 @@ This repository contains a pipeline to extract event statistics like bee visits 
 [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1o4g6T5VmgB6xksLn7CkxsDRkddjmekQP?usp=sharing)
 
 ![](https://github.com/lqmeyers/Bee_Visit_Count/blob/main/Images/Demo_of_bounds.jpg)
+
+Supported through NSF grant 2150326 and USDA grant 2021-67014-34999 

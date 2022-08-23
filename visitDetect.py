@@ -9,7 +9,6 @@ import math
 from tabulate import tabulate
 
 
-#filename = r'C:\Users\lqmey\Downloads\fixed3x6_22_22_test.mp4.predictions.analysis.h5.000_fixed3x6_22_22_test.analysis.h5'
 
 def parseTrackData(file):
   with h5py.File(file,'r') as f:
@@ -349,12 +348,12 @@ def getStats(listIn,flowerConfig,tracks):
 ##------------------where the magic happens----------------
 
 #filename = r"C:\Users\lqmey\Downloads\just_vid_7.analysis.h5.h"
-#filename = r"C:\Users\lqmey\Downloads\validation_22_22_6.analysis.h5.h"
+filename = r"C:\Users\lqmey\Downloads\validation_22_22_6.analysis.h5.h"
 #filename = r'C:\Users\lqmey\Downloads\fixed3x6_22_22_test.mp4.predictions.analysis.h5.000_fixed3x6_22_22_test.analysis.h5'
 
 #frameFile = r'C:/Users/lqmey/OneDrive/Desktop/Bee Videos/test in feild/22_6_22_vids/targetFrame.tiff'
-#frameFile = r"C:\Users\lqmey\OneDrive\Desktop\Bee_Visit_Count\Images\targetFrame.tiff"
-#ff.main(frameFile,2,show_validation=True)
+frameFile = r"C:\Users\lqmey\OneDrive\Desktop\Bee_Visit_Count\Images\targetFrame.tiff"
+ff.main(frameFile,2,show_validation=True)
 
 #configFile = 'flower_patch_config.json'
 
@@ -445,6 +444,6 @@ file.close()
 print('written')
 '''
 
-#vs = visits(filename)
-#vs.displayPerFlower()
+vs = visits(filename)
+vs.displayPerFlower()
 #print('ran')
