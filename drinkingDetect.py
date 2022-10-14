@@ -307,7 +307,7 @@ class drinks:
     keyList = [] 
     for l in listIn[0].keys():
       keyList.append(l)
-    with open('drinks.csv',w) as f:
+    with open('drinks.csv','w') as f:
       writer = csv.DictWriter(f,fieldnames=keyList)
       writer.writeheader()
       writer.writerows(listIn)
