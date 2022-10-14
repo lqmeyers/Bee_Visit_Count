@@ -303,7 +303,7 @@ class drinks:
     listIn = []
     for key in range(len(self.drinkDict)):
       self.drinkDict[key]['event_num']=key #moving index inside dict 
-      listIn.append(de[key])
+      listIn.append(self.drinkDict[key])
     keyList = [] 
     for l in listIn[0].keys():
       keyList.append(l)
