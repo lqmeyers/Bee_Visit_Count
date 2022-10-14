@@ -9,6 +9,7 @@ import matplotlib.patches as ptch
 import flowerFinder as ff 
 import cv2
 import json
+import csv
 from tabulate import tabulate
 
 
@@ -291,12 +292,24 @@ class drinks:
     self.statDict = makeDict(self.statArray,'stats')
 
   def writeJSON(self):
-    '''write all visit info to visits.json'''
+    '''write all visit info to drinks.json'''
     fullDict = {'Drinking_Events':self.drinkDict,'Statistics':self.statDict}
     with open('drinks.json','w') as f:
       json.dump(fullDict,f,indent=3)
 
-  ##add write to csv option!!!
+  def writeCSV(self):
+    '''writes all drinking events to drinks.csv'''
+    listIn = []
+    for key in range(len(self.drinkDict)):
+      self.drinkDict[key]['event_num']=key #moving index inside dict 
+      listIn.append(de[key])
+    keyList = [] 
+    for l in listIn[0].keys():
+      keyList.append(l)
+    with open('drinks.csv',w) as f:
+      writer = csv.DictWriter(f,fieldnames=keyList)
+      writer.writeheader()
+      writer.writerows(listIn)
 
   def displayPerInd(self):
     '''display table of total drinks by individual'''
