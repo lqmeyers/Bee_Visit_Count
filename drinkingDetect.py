@@ -270,6 +270,7 @@ class drinks:
     self.getDrinks()
     self.analyze()
     self.writeJSON()
+    self.writeCSV()
   
   def getTracks(self):
     '''seperate tracks from h5'''
