@@ -134,3 +134,7 @@ dmypy.json
 *.txt
 
 
+drinks.json
+events.json
+flower_patch_config.json
+visits.json
