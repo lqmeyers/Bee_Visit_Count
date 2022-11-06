@@ -7,8 +7,9 @@ import flowerFinder as ff
 import json
 import math
 from tabulate import tabulate
+import csv
 
-
+#filename = r'/home/lqmeyers/SLEAP_files/h5_files/fixed3x6_22_22_test.mp4.predictions.analysis.h5.000_fixed3x6_22_22_test.analysis.h5'
 
 def parseTrackData(file):
   with h5py.File(file,'r') as f:
@@ -389,6 +390,7 @@ class visits:
     self.getVisits()
     self.analyze()
     self.writeJSON()
+    self.writeCSV()
   
   def getTracks(self):
     '''seperate tracks from h5'''
@@ -417,7 +419,19 @@ class visits:
     with open('visits.json','w') as f:
       json.dump(fullDict,f,indent=3)
 
-  ##add write to csv option!!!
+  def writeCSV(self):
+    '''writes all visiting events to visits.csv'''
+    listIn = []
+    for key in range(len(self.visitDict)):
+      self.visitDict[key]['event_num']=key #moving index inside dict 
+      listIn.append(self.visitDict[key])
+    keyList = [] 
+    for l in listIn[0].keys():
+      keyList.append(l)
+    with open('visits.csv','w') as f:
+      writer = csv.DictWriter(f,fieldnames=keyList)
+      writer.writeheader()
+      writer.writerows(listIn)
 
   def displayPerInd(self):
     '''display table of total visits by individual'''

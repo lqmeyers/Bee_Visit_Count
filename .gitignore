@@ -132,6 +132,7 @@ dmypy.json
 ##-------------------------- Things I added ---------------------
 
 *.txt
+*.csv
 
 
 drinks.json
