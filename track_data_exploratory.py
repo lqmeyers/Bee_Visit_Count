@@ -33,14 +33,18 @@ print('written')
 def parseTrackScores(file):
   '''gets track scores from h5 file'''
   with h5py.File(file,'r') as f:
-    scores = f['tracking_scores'][:].T
+    dset_names = list(f.keys())
+    print(dset_names)
+    scores = f['instance_scores'][:].T#'tracking_scores'][:].T
   return scores
 
 data = parseTrackScores(filename)
 print(data.shape)
 
-file = open('track_scores.txt','w')
+#"""
+file = open('instance_scores.txt','w')
 for f in range(len(data)):
   file.write('frame '+str(f)+' score = '+str(data[f])+u'\n')
 file.close()
 print('written')
+#"""
