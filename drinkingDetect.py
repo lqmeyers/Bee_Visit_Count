@@ -17,6 +17,7 @@ from tabulate import tabulate
 #filename = r"C:\Users\lqmey\Downloads\validation_22_22_6.analysis.h5.h"
 #filename = r'/home/lqmeyers/SLEAP_files/h5_files/fixed3x6_22_22_test.mp4.predictions.analysis.h5.000_fixed3x6_22_22_test.analysis.h5'
 
+
 def parseTrackData(file):
   with h5py.File(file,'r') as f:
     #dset_names = list(f.keys())
@@ -327,6 +328,7 @@ class drinks:
     print(tabulate(flowerDict,headers='keys',tablefmt='fancy_grid'))
 
 
+#filename = r"/home/lqmeyers/SLEAP_files/h5_files/validation_22_22_6.000_fixed2x6_22_22_test.analysis.h5.h"
 #d = drinks(filename)
 #d.displayPerFlower()
 #print('found')
