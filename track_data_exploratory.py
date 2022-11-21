@@ -7,9 +7,7 @@ import numpy as np
 #filename = r"//mnt//c//Users//lqmey//Downloads//fixed3x6_22_22_test.mp4.predictions.analysis.h5.000_fixed3x6_22_22_test.analysis.h5"
 filename = r"/home/lqmeyers/SLEAP_files/h5_files/validation_22_22_6.000_fixed2x6_22_22_test.analysis.h5.h"
 
-
-
- #for writing coords per track 
+#for writing coords per track ------------------------------------
 def parseTrackData(file):
   with h5py.File(file,'r') as f:
     #dset_names = list(f.keys())
@@ -31,6 +29,7 @@ file.close()
 print('written')
 
 """
+#write scores to text file ---------------------------
 
 def parseTrackScores(file):
   '''gets track scores from h5 file'''
