@@ -23,7 +23,7 @@ def parseTrackData(file):
 
 
 class events:
-    def __init__(self,file,vidFile,FlowerConfigFile='flower_patch_config.json'):
+    def __init__(self,file,vidFile,saveImages=False,FlowerConfigFile='flower_patch_config.json'):
         print('initializing')
         self.file = file 
         self.vidFile = vidFile
@@ -32,9 +32,9 @@ class events:
         self.tracks = self.getTracks()
         print('track array shape = ',self.tracks.shape)
         print('finding visits')
-        self.visits = vd.visits(self.file,self.vidFile).visits
+        self.visits = vd.visits(self.file,self.vidFile,saveImages).visits
         print('finding drinking bees')
-        self.drinks = dd.drinks(self.file,self.vidFile).drinks
+        self.drinks = dd.drinks(self.file,self.vidFile,saveImages).drinks
         #print(self.drinks)
         self.analyze()
         print('writing output')
@@ -98,7 +98,7 @@ class events:
             fullFlowerDict = {'Event Type':['Drinking Nectar','Flower Visits']}
             flowerVisitDict = self.visitStatDict['Visits_per_Flower']
             flowerDrinkDict = self.drinkingStatDict['Drinks_per_Flower']
-            for v in range(len(flowerDrinkDict)-1):
+            for v in range(len(flowerDrinkDict)):
                 fullFlowerDict[v] = [flowerDrinkDict[v],flowerVisitDict[v]]
                 fullFlowerDict['Flower '+str(v)] = fullFlowerDict.pop(v)
             print(tabulate(fullFlowerDict,headers='keys',tablefmt='fancy_grid'))
@@ -109,10 +109,13 @@ class events:
                 combinedList.append(np.ndarray.tolist(self.visitStatArray[1][i])+np.ndarray.tolist(self.drinkingStatArray[1][i]))
             combinedList.insert(0,['Track ID','Visits to Flower 0','Visits to Flower 1','Drinks at Flower 0','Drinks at Flower 1'])
             print(tabulate(combinedList,headers='firstrow',tablefmt='fancy_grid',showindex=True))
-    
+
+
+#----------------Test Calls ----------------------------------
+
 #filename = r"/home/lqmeyers/SLEAP_files/h5_files/validation_22_22_6.000_fixed2x6_22_22_test.analysis.h5.h"
 #vid = "/mnt/c/Users/lqmey/OneDrive/Desktop/fixed2x6_22_22_test.mp4"
 
-#e = events(filename,vid)
+#e = events(filename,vid,True)
 #e.displayEvents()
 

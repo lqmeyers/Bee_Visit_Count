@@ -372,8 +372,8 @@ class drinks:
 
 
 ##-----------------Test Calls-------------------------
-vid = "/mnt/c/Users/lqmey/OneDrive/Desktop/fixed2x6_22_22_test.mp4"
-filename = r"/home/lqmeyers/SLEAP_files/h5_files/validation_22_22_6.000_fixed2x6_22_22_test.analysis.h5.h"
-d = drinks(filename,vid,True)
+#vid = "/mnt/c/Users/lqmey/OneDrive/Desktop/fixed2x6_22_22_test.mp4"
+#filename = r"/home/lqmeyers/SLEAP_files/h5_files/validation_22_22_6.000_fixed2x6_22_22_test.analysis.h5.h"
+#d = drinks(filename,vid,True)
 #d.displayPerFlower()
-print('found')
+#print('found')

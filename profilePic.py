@@ -130,7 +130,7 @@ def getPic(vidFile,tracks,targetTrack,targetFrame,show=False,outPath='/home/lqme
         cv2.imshow('crop',beephoto)
         cv2.waitKey(5000)
         cv2.destroyAllWindows()
-    name = justFileName(vidFile)[0:-1]+"_mp4.track"+str(targetTrack)+'.frame'+str(targetFrame)+'.png'
+    name = justFileName(vidFile)[0:-1]+"_mp4.track"+str(targetTrack)+'.frame'+str(targetFrame)+'.tiff'
     outFile = outPath+name
     cv2.imwrite(outFile,beephoto)
     return name
