@@ -3,9 +3,7 @@ import h5py
 import numpy as np
 import math
 
-#filename = r"/home/lqmeyers/SLEAP_files/h5_files/validation_22_22_6.000_fixed2x6_22_22_test.analysis.h5.h"
-#vidFile = "/home/lqmeyers/SLEAP_files/Bee_vids/22_6_22_vids/fixed2x6_22_22_test.mp4"
-#vidFile = "/mnt/c/Users/lqmey/OneDrive/Desktop/fixed2x6_22_22_test.mp4"
+#-----------Extract h5 data ------------------------------------
 
 def parseTrackData(file):
   '''gets track coords from h5 file '''
@@ -19,17 +17,11 @@ def parseTrackData(file):
   trackFirst = np.moveaxis(locations,-1,0) #groups by track id
   return trackFirst #locations   
 
-#tracks = parseTrackData(filename)
-#print(tracks.shape)
-
 def parseTrackScores(file):
   '''gets track scores from h5 file'''
   with h5py.File(file,'r') as f:
     scores = f['tracking_scores'][:].T
   return scores
-
-#t_scores = parseTrackScores(filename)
-#print(t_scores.shape)
 
 def parseInstanceScores(file):
   '''gets track scores from h5 file'''
@@ -37,8 +29,6 @@ def parseInstanceScores(file):
     scores = f['instance_scores'][:].T
   return scores
 
-#i_scores = parseTrackScores(filename)
-#print(i_scores.shape)
 
 ###--------------------Jeffrey's code--------------------------------------------
 
@@ -55,7 +45,6 @@ ignore_angle = False #: Class Attribute for ignore_angle for plotting (this is u
 y_offset = 0 
 
 #----------Helper functions----------------------
-
 
 #func for finding angle  of body, feed in neck and waist? 
 def angleBetweenPoints(p1, p2):
@@ -115,24 +104,8 @@ def justFileName(pathIn):
       if save == True:
         out = out + c
 
-     
-#test = justFileName(vidFile)
-#print(test)       
 
-'''takes in entry from visitDict, something like this: 
-"171": {
-         "start_frame": 12708,
-         "end_frame": 12796,
-         "track_id": 215,
-         "flower_id": 0
-         } 
-         
-         and finds a good photo of the individual
-         and saves it and returns the file name
-         '''
-
-#steps 
-
+#--test file names-------------------------
 '''
 vidFile = "/mnt/c/Users/lqmey/OneDrive/Desktop/fixed2x6_22_22_test.mp4"
 filename = r"/home/lqmeyers/SLEAP_files/h5_files/validation_22_22_6.000_fixed2x6_22_22_test.analysis.h5.h"
@@ -140,6 +113,8 @@ frameFolder = "home/lqmeyers/SLEAP_files/Bee_imgs" #need to write out
 targetTrack = 2
 targetFrame = 175
 '''
+
+#---------------main function---------------------
 
 def getPic(vidFile,tracks,targetTrack,targetFrame,show=False,outPath='/home/lqmeyers/SLEAP_files/Bee_imgs/'):
     '''saves a photo of bee from a given track Id (Target Track) at a 
