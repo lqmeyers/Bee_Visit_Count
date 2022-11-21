@@ -66,7 +66,7 @@ class events:
         if mode == 'perFlower':
             '''display table of total visits by flower'''
             flowerDict = self.visitStatDict['Visits_per_Flower']
-            for v in range(len(flowerDict)):
+            for v in range(len(flowerDict)-1):
                 flowerDict[v] = [flowerDict[v]]
                 flowerDict['Flower '+str(v)] = flowerDict.pop(v)
             print(tabulate(flowerDict,headers='keys',tablefmt='fancy_grid'))
@@ -81,10 +81,10 @@ class events:
         if mode == 'perFlower':
             '''display table of total visits by flower'''
             flowerDict = self.drinkingStatDict['Drinks_per_Flower']
-            for v in range(len(flowerDict)):
+            for v in range(len(flowerDict)-1):
                 flowerDict[v] = [flowerDict[v]]
                 flowerDict['Flower '+str(v)] = flowerDict.pop(v)
-            print(tabulate(flowerDict,headers='keys',tablefmt='fancy_grid'))
+            print(tabulate(flowerDict[:-1],headers='keys',tablefmt='fancy_grid'))
         else:
             '''display table of total visits by individual'''
             listIn = np.ndarray.tolist(self.drinkingStatArray[1])
@@ -98,7 +98,7 @@ class events:
             fullFlowerDict = {'Event Type':['Drinking Nectar','Flower Visits']}
             flowerVisitDict = self.visitStatDict['Visits_per_Flower']
             flowerDrinkDict = self.drinkingStatDict['Drinks_per_Flower']
-            for v in range(len(flowerDrinkDict)):
+            for v in range(len(flowerDrinkDict)-1):
                 fullFlowerDict[v] = [flowerDrinkDict[v],flowerVisitDict[v]]
                 fullFlowerDict['Flower '+str(v)] = fullFlowerDict.pop(v)
             print(tabulate(fullFlowerDict,headers='keys',tablefmt='fancy_grid'))
@@ -110,9 +110,9 @@ class events:
             combinedList.insert(0,['Track ID','Visits to Flower 0','Visits to Flower 1','Drinks at Flower 0','Drinks at Flower 1'])
             print(tabulate(combinedList,headers='firstrow',tablefmt='fancy_grid',showindex=True))
     
-filename = r"/home/lqmeyers/SLEAP_files/h5_files/validation_22_22_6.000_fixed2x6_22_22_test.analysis.h5.h"
-vid = "/mnt/c/Users/lqmey/OneDrive/Desktop/fixed2x6_22_22_test.mp4"
+#filename = r"/home/lqmeyers/SLEAP_files/h5_files/validation_22_22_6.000_fixed2x6_22_22_test.analysis.h5.h"
+#vid = "/mnt/c/Users/lqmey/OneDrive/Desktop/fixed2x6_22_22_test.mp4"
 
-e = events(filename,vid)
-e.displayEvents()
+#e = events(filename,vid)
+#e.displayEvents()
 

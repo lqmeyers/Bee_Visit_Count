@@ -222,12 +222,12 @@ def getAllVisits(data,flower_config):
   '''gets all frame indicies where a bee is in the right spot'''
   all = [] 
   out = []
-  for i in range(len(flower_config)):
+  for i in range(len(flower_config)-1):
     all.append([])
   for b in range(len(data)):
     justHead = data[b]
     justHead = justHead[:,3,:] 
-    for f in range(len(flower_config)):
+    for f in range(len(flower_config)-1):
       found = detectVisit(justHead,makeCW(expandRect(flower_config[str(f)]['corners'],30)))
       #print(b,' ',found)
       #print('bee #',b,'at flower',f,'=',found)
@@ -341,23 +341,24 @@ def makeCW(corners):
 def getStats(listIn,flowerConfig,tracks):
   '''makes a list with some relevant stats from cleanDetects
   before it is converted to dictionary''' 
-  visitsPerFlower = np.zeros(shape=len(flowerConfig))
-  visitsPerInd = np.zeros(shape=(len(tracks),len(flowerConfig)))
+  visitsPerFlower = np.zeros(shape=(len(flowerConfig)-1))
+  visitsPerInd = np.zeros(shape=(len(tracks),(len(flowerConfig)-1)))
   for i in listIn:
     visitsPerFlower[i[2][1]] =  visitsPerFlower[i[2][1]] + 1 #tallies using val as index
     visitsPerInd[i[2][0]][i[2][1]] = visitsPerInd[i[2][0]][i[2][1]] + 1 
   return [visitsPerFlower,visitsPerInd]
 
-##------------------where the magic happens----------------
+def getName(file):
+    '''uses a path string to get the name of a file'''
+    strOut = ''
+    i = 1
+    while file[-i] != '/':
+        i = i + 1
+        #print(file[-i])
+    strOut = file[-i:]
+    return strOut
 
-#filename = r"C:\Users\lqmey\Downloads\just_vid_7.analysis.h5.h"
-#filename = r"C:\Users\lqmey\Downloads\validation_22_22_6.analysis.h5.h"
-#filename = r'C:\Users\lqmey\Downloads\fixed3x6_22_22_test.mp4.predictions.analysis.h5.000_fixed3x6_22_22_test.analysis.h5'
-#filename = r"/home/lqmeyers/SLEAP_files/h5_files/validation_22_22_6.000_fixed2x6_22_22_test.analysis.h5.h"
-#vid = "/mnt/c/Users/lqmey/OneDrive/Desktop/fixed2x6_22_22_test.mp4"
-#frameFile = r'C:/Users/lqmey/OneDrive/Desktop/Bee Videos/test in feild/22_6_22_vids/targetFrame.tiff'
-#frameFile = r"/home/lqmeyers/SLEAP_files/Bee_vids/22_6_22_vids/targetFrame.tiff"
-#ff.main(frameFile,2,show_validation=True)
+##------------------where the magic happens----------------
 
 #configFile = 'flower_patch_config.json'
 
@@ -386,6 +387,7 @@ class visits:
   def __init__(self,h5file,vidFile,saveImages=False,flowerConfigFile='flower_patch_config.json'):
     self.file = h5file
     self.vidFile = vidFile
+    self.vidName = getName(vidFile)
     self.saveImages = saveImages
     self.configFile = flowerConfigFile
     self.getTracks()
@@ -407,6 +409,8 @@ class visits:
     '''find all visit events from track data'''
     self.tracks = parseTrackData(self.file)
     self.patchConfig = json.load(open(self.configFile))
+    if self.patchConfig['Init']['Video_Name'] != self.vidName:
+      print('Have you initilialized your flower patch?')
     detects = getAllVisits(self.tracks,self.patchConfig)
     self.visits = cleanDetects(detects)
     self.visitDict = makeDict(self.visits)
@@ -416,6 +420,7 @@ class visits:
   def analyze(self):
     '''find some cumulative totals of visit events'''
     self.statArray = getStats(self.visits,self.patchConfig,self.tracks)
+    #print(self.statArray)
     self.statDict = makeDict(self.statArray,'stats')
 
   def writeJSON(self):
@@ -464,6 +469,11 @@ for f in range(len(data[380])):
 file.close()
 print('written')
 '''
+
+
+#---------------Test calls and files---------------------------------
+#filename = r"/home/lqmeyers/SLEAP_files/h5_files/validation_22_22_6.000_fixed2x6_22_22_test.analysis.h5.h"
+#vid = "/mnt/c/Users/lqmey/OneDrive/Desktop/fixed2x6_22_22_test.mp4"
 
 #vs = visits(filename,vid)
 #vs.displayPerFlower()

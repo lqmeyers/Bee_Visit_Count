@@ -141,12 +141,12 @@ def getAll(data,flower_config):
   '''gets all frame indicies where a bee is in the right spot'''
   all = [] 
   out = []
-  for i in range(len(flower_config)):
+  for i in range(len(flower_config)-1):
     all.append([])
   for b in range(len(data)):
     justHead = data[b]
     justHead = justHead[:,3,:] 
-    for f in range(len(flower_config)):
+    for f in range(len(flower_config)-1):
       found = detectHead(justHead,(flower_config[str(f)]['center']),'circle')
       #print(b,' ',found)
       #print('bee #',b,'at flower',f,'=',found)
@@ -255,12 +255,23 @@ def makeDict(listIn,mode='drinking'):
 def getStats(listIn,flowerConfig,tracks):
   '''makes a list with some relevant stats from cleanDetects
   before it is converted to dictionary''' 
-  drinksPerFlower = np.zeros(shape=len(flowerConfig))
-  drinksPerInd = np.zeros(shape=(len(tracks),len(flowerConfig)))
+  drinksPerFlower = np.zeros(shape=len(flowerConfig)-1)
+  drinksPerInd = np.zeros(shape=(len(tracks),len(flowerConfig)-1))
   for i in listIn:
     drinksPerFlower[i[2][1]] =  drinksPerFlower[i[2][1]] + 1 #tallies using val as index
     drinksPerInd[i[2][0]][i[2][1]] = drinksPerInd[i[2][0]][i[2][1]] + 1 
   return [drinksPerFlower,drinksPerInd]
+
+
+def getName(file):
+    '''uses a path string to get the name of a file'''
+    strOut = ''
+    i = 1
+    while file[-i] != '/':
+        i = i + 1
+        #print(file[-i])
+    strOut = file[-i:]
+    return strOut
 
 ##------------------where the magic happens----------------
 
@@ -268,6 +279,7 @@ class drinks:
   def __init__(self,file,vidFile,flowerConfigFile='flower_patch_config.json'):
     self.file = file
     self.vidFile = vidFile
+    self.vidName = getName(vidFile)
     self.configFile = flowerConfigFile
     self.getTracks()
     self.getDrinks()
@@ -284,6 +296,8 @@ class drinks:
     '''find all visit events from track data'''
     self.tracks = parseTrackData(self.file)
     self.patchConfig = json.load(open(self.configFile))
+    if self.patchConfig['Init']['Video_Name'] != self.vidName:
+      print('Have you initilialized your flower patch?')
     detects = getAll(self.tracks,self.patchConfig)
     self.drinks = cleanDetects(detects)
     self.drinkDict = makeDict(self.drinks)
