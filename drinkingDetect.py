@@ -7,6 +7,8 @@ import numpy as np
 import h5py
 import matplotlib.patches as ptch
 import flowerFinder as ff 
+import profilePic as pp 
+from getBestFrame import bestFrame
 import cv2
 import json
 import csv
@@ -273,13 +275,28 @@ def getName(file):
     strOut = file[-i:]
     return strOut
 
+
+def parseTrackScores(file,mode='instance'):
+  '''gets track scores from h5 file'''
+  with h5py.File(file,'r') as f:
+    dset_names = list(f.keys())
+    #print(dset_names)
+    if mode == 'instance':
+      scores = f['instance_scores'][:].T
+    else:
+      scores = f['tracking_scores'][:].T
+  return scores
+
 ##------------------where the magic happens----------------
 
 class drinks:
-  def __init__(self,file,vidFile,flowerConfigFile='flower_patch_config.json'):
+  def __init__(self,file,vidFile,saveImages=False,flowerConfigFile='flower_patch_config.json'):
     self.file = file
     self.vidFile = vidFile
     self.vidName = getName(vidFile)
+    self.saveImages = saveImages
+    self.iScores = parseTrackScores(self.file)
+    self.tScores = parseTrackScores(self.file,'tracks')
     self.configFile = flowerConfigFile
     self.getTracks()
     self.getDrinks()
@@ -320,6 +337,16 @@ class drinks:
     listIn = []
     for key in range(len(self.drinkDict)):
       self.drinkDict[key]['event_num']=key #moving index inside dict 
+      if self.saveImages == True: 
+        start = self.drinkDict[key]['start_frame']
+        end = self.drinkDict[key]['end_frame']
+        trackId = self.drinkDict[key]['track_id']
+        print('saving image for drinking event '+str(key))
+        targetFrame = bestFrame(start,end,trackId,self.tracks,self.iScores,self.tScores)
+        if targetFrame != 0:
+          self.drinkDict[key]['image_file']=pp.getPic(self.vidFile,self.tracks,self.drinkDict[key]['track_id'],targetFrame)
+        else:
+          self.drinkDict[key]['image_file']='No photo saved'
       listIn.append(self.drinkDict[key])
     keyList = [] 
     for l in listIn[0].keys():
@@ -343,8 +370,10 @@ class drinks:
       flowerDict['Flower '+str(v)] = flowerDict.pop(v)
     print(tabulate(flowerDict,headers='keys',tablefmt='fancy_grid'))
 
-#vid = "/mnt/c/Users/lqmey/OneDrive/Desktop/fixed2x6_22_22_test.mp4"
-#filename = r"/home/lqmeyers/SLEAP_files/h5_files/validation_22_22_6.000_fixed2x6_22_22_test.analysis.h5.h"
-#d = drinks(filename,vid)
+
+##-----------------Test Calls-------------------------
+vid = "/mnt/c/Users/lqmey/OneDrive/Desktop/fixed2x6_22_22_test.mp4"
+filename = r"/home/lqmeyers/SLEAP_files/h5_files/validation_22_22_6.000_fixed2x6_22_22_test.analysis.h5.h"
+d = drinks(filename,vid,True)
 #d.displayPerFlower()
-#print('found')
+print('found')

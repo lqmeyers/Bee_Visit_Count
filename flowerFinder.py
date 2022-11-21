@@ -131,7 +131,7 @@ def getName(file):
     return strOut
 
 
-#vidFile = r"/home/lqmeyers/SLEAP_files/Bee_vids/22_6_22_vids/fixed3x6_22_22_test.mp4"
+#vidFile = r"/home/lqmeyers/SLEAP_files/Bee_vids/22_6_22_vids/fixed2x6_22_22_test.mp4"
 #results = main(vidFile,2,show_validation=True)
 #json_string = json.dumps(results,indent=3)
 #print(json_string)

@@ -5,6 +5,7 @@ import numpy as np
 import h5py
 import flowerFinder as ff 
 import profilePic as pp 
+from getBestFrame import bestFrame
 import json
 import math
 from tabulate import tabulate
@@ -358,6 +359,17 @@ def getName(file):
     strOut = file[-i:]
     return strOut
 
+def parseTrackScores(file,mode='instance'):
+  '''gets track scores from h5 file'''
+  with h5py.File(file,'r') as f:
+    dset_names = list(f.keys())
+    #print(dset_names)
+    if mode == 'instance':
+      scores = f['instance_scores'][:].T
+    else:
+      scores = f['tracking_scores'][:].T
+  return scores
+
 ##------------------where the magic happens----------------
 
 #configFile = 'flower_patch_config.json'
@@ -388,6 +400,8 @@ class visits:
     self.file = h5file
     self.vidFile = vidFile
     self.vidName = getName(vidFile)
+    self.iScores = parseTrackScores(self.file)
+    self.tScores = parseTrackScores(self.file,'tracks')
     self.saveImages = saveImages
     self.configFile = flowerConfigFile
     self.getTracks()
@@ -434,8 +448,16 @@ class visits:
     listIn = []
     for key in range(len(self.visitDict)):
       self.visitDict[key]['event_num']=key #moving index inside dict 
-      if self.saveImages == True: #need to add video input 
-        self.visitDict[key]['image_file']=pp.getPic(self.vidFile,self.tracks,self.visitDict[key]['track_id'],int((self.visitDict[key]['start_frame']+self.visitDict[key]['end_frame'])/2))
+      if self.saveImages == True: 
+        start = self.visitDict[key]['start_frame']
+        end = self.visitDict[key]['end_frame']
+        trackId = self.visitDict[key]['track_id']
+        print('saving image for visit '+str(key))
+        targetFrame = bestFrame(start,end,trackId,self.tracks,self.iScores,self.tScores)
+        if targetFrame != 0:
+          self.visitDict[key]['image_file']=pp.getPic(self.vidFile,self.tracks,self.visitDict[key]['track_id'],targetFrame)
+        else:
+          self.visitDict[key]['image_file']='No photo saved'
       listIn.append(self.visitDict[key])
     keyList = [] 
     for l in listIn[0].keys():
@@ -475,6 +497,6 @@ print('written')
 #filename = r"/home/lqmeyers/SLEAP_files/h5_files/validation_22_22_6.000_fixed2x6_22_22_test.analysis.h5.h"
 #vid = "/mnt/c/Users/lqmey/OneDrive/Desktop/fixed2x6_22_22_test.mp4"
 
-#vs = visits(filename,vid)
+#vs = visits(filename,vid,True)
 #vs.displayPerFlower()
 #print('ran')
