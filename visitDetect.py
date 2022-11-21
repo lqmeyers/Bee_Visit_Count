@@ -4,10 +4,12 @@
 import numpy as np 
 import h5py
 import flowerFinder as ff 
+import profilePic as pp 
 import json
 import math
 from tabulate import tabulate
 import csv
+import datetime
 
 #filename = r'/home/lqmeyers/SLEAP_files/h5_files/fixed3x6_22_22_test.mp4.predictions.analysis.h5.000_fixed3x6_22_22_test.analysis.h5'
 
@@ -351,9 +353,10 @@ def getStats(listIn,flowerConfig,tracks):
 #filename = r"C:\Users\lqmey\Downloads\just_vid_7.analysis.h5.h"
 #filename = r"C:\Users\lqmey\Downloads\validation_22_22_6.analysis.h5.h"
 #filename = r'C:\Users\lqmey\Downloads\fixed3x6_22_22_test.mp4.predictions.analysis.h5.000_fixed3x6_22_22_test.analysis.h5'
-
+#filename = r"/home/lqmeyers/SLEAP_files/h5_files/validation_22_22_6.000_fixed2x6_22_22_test.analysis.h5.h"
+#vid = "/mnt/c/Users/lqmey/OneDrive/Desktop/fixed2x6_22_22_test.mp4"
 #frameFile = r'C:/Users/lqmey/OneDrive/Desktop/Bee Videos/test in feild/22_6_22_vids/targetFrame.tiff'
-#frameFile = r"C:\Users\lqmey\OneDrive\Desktop\Bee_Visit_Count\Images\targetFrame.tiff"
+#frameFile = r"/home/lqmeyers/SLEAP_files/Bee_vids/22_6_22_vids/targetFrame.tiff"
 #ff.main(frameFile,2,show_validation=True)
 
 #configFile = 'flower_patch_config.json'
@@ -380,8 +383,10 @@ initialization of the object, but various parts of the data can be accessed afte
 analysis pipeline is run. Additionally data can be displayed or saved in various formats '''
 
 class visits:
-  def __init__(self,file,flowerConfigFile='flower_patch_config.json'):
-    self.file = file
+  def __init__(self,h5file,vidFile,saveImages=False,flowerConfigFile='flower_patch_config.json'):
+    self.file = h5file
+    self.vidFile = vidFile
+    self.saveImages = saveImages
     self.configFile = flowerConfigFile
     self.getTracks()
     #flower_config = json.load(open(flowerConfigFile))
@@ -415,7 +420,7 @@ class visits:
 
   def writeJSON(self):
     '''write all visit info to visits.json'''
-    fullDict = {'Visits':self.visitDict,'Statistics':self.statDict}
+    fullDict = {'Init':{'VidFile':self.vidFile,'Datetime':str(datetime.datetime.now())},'Visits':self.visitDict,'Statistics':self.statDict}
     with open('visits.json','w') as f:
       json.dump(fullDict,f,indent=3)
 
@@ -424,6 +429,8 @@ class visits:
     listIn = []
     for key in range(len(self.visitDict)):
       self.visitDict[key]['event_num']=key #moving index inside dict 
+      if self.saveImages == True: #need to add video input 
+        self.visitDict[key]['image_file']=pp.getPic(self.vidFile,self.tracks,self.visitDict[key]['track_id'],int((self.visitDict[key]['start_frame']+self.visitDict[key]['end_frame'])/2))
       listIn.append(self.visitDict[key])
     keyList = [] 
     for l in listIn[0].keys():
@@ -458,6 +465,6 @@ file.close()
 print('written')
 '''
 
-#vs = visits(filename)
+#vs = visits(filename,vid)
 #vs.displayPerFlower()
 #print('ran')

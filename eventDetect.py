@@ -6,13 +6,12 @@ import h5py
 import json 
 import math 
 from tabulate import tabulate
+import datetime
 
 import flowerFinder as ff
 import visitDetect as vd 
 import drinkingDetect as dd 
 
-#filename = r'C:\Users\lqmey\Downloads\fixed3x6_22_22_test.mp4.predictions.analysis.h5.000_fixed3x6_22_22_test.analysis.h5'
-#filename = filename = r"C:\Users\lqmey\Downloads\validation_22_22_6.analysis.h5.h"
 
 def parseTrackData(file):
   with h5py.File(file,'r') as f:
@@ -24,17 +23,18 @@ def parseTrackData(file):
 
 
 class events:
-    def __init__(self,file,FlowerConfigFile='flower_patch_config.json'):
+    def __init__(self,file,vidFile,FlowerConfigFile='flower_patch_config.json'):
         print('initializing')
         self.file = file 
+        self.vidFile = vidFile
         self.configFile = FlowerConfigFile
         self.patchConfig = json.load(open(self.configFile))
         self.tracks = self.getTracks()
         print('track array shape = ',self.tracks.shape)
         print('finding visits')
-        self.visits = vd.visits(self.file).visits
+        self.visits = vd.visits(self.file,self.vidFile).visits
         print('finding drinking bees')
-        self.drinks = dd.drinks(self.file).drinks
+        self.drinks = dd.drinks(self.file,self.vidFile).drinks
         #print(self.drinks)
         self.analyze()
         print('writing output')
@@ -55,7 +55,8 @@ class events:
 
     def writeJSON(self):
         '''writes all info to visits.json'''
-        fullDict = {'Visit_Events':{'Visits':vd.makeDict(self.visits),'Statistics':self.visitStatDict},
+        fullDict = {'Init':{'VidFile':self.vidFile,'Datetime':str(datetime.datetime.now())},
+            'Visit_Events':{'Visits':vd.makeDict(self.visits),'Statistics':self.visitStatDict},
                     'Drinking_Events':{'Drinks':dd.makeDict(self.drinks),'Statistics':self.drinkingStatDict}}
         with open('events.json','w') as f:
             json.dump(fullDict,f,indent=2)
@@ -109,6 +110,9 @@ class events:
             combinedList.insert(0,['Track ID','Visits to Flower 0','Visits to Flower 1','Drinks at Flower 0','Drinks at Flower 1'])
             print(tabulate(combinedList,headers='firstrow',tablefmt='fancy_grid',showindex=True))
     
-#e = events(filename)
-#e.displayEvents(mode='perInd')
+filename = r"/home/lqmeyers/SLEAP_files/h5_files/validation_22_22_6.000_fixed2x6_22_22_test.analysis.h5.h"
+vid = "/mnt/c/Users/lqmey/OneDrive/Desktop/fixed2x6_22_22_test.mp4"
+
+e = events(filename,vid)
+e.displayEvents()
 

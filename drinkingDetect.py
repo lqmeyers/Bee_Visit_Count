@@ -11,6 +11,7 @@ import cv2
 import json
 import csv
 from tabulate import tabulate
+import datetime
 
 
 #filename = r"C:\Users\lqmey\Downloads\just_vid_7.analysis.h5.h"
@@ -264,8 +265,9 @@ def getStats(listIn,flowerConfig,tracks):
 ##------------------where the magic happens----------------
 
 class drinks:
-  def __init__(self,file,flowerConfigFile='flower_patch_config.json'):
+  def __init__(self,file,vidFile,flowerConfigFile='flower_patch_config.json'):
     self.file = file
+    self.vidFile = vidFile
     self.configFile = flowerConfigFile
     self.getTracks()
     self.getDrinks()
@@ -295,7 +297,7 @@ class drinks:
 
   def writeJSON(self):
     '''write all visit info to drinks.json'''
-    fullDict = {'Drinking_Events':self.drinkDict,'Statistics':self.statDict}
+    fullDict = {'Init':{'VidFile':self.vidFile,'Datetime':str(datetime.datetime.now())},'Drinking_Events':self.drinkDict,'Statistics':self.statDict}
     with open('drinks.json','w') as f:
       json.dump(fullDict,f,indent=3)
 
@@ -327,8 +329,8 @@ class drinks:
       flowerDict['Flower '+str(v)] = flowerDict.pop(v)
     print(tabulate(flowerDict,headers='keys',tablefmt='fancy_grid'))
 
-
+#vid = "/mnt/c/Users/lqmey/OneDrive/Desktop/fixed2x6_22_22_test.mp4"
 #filename = r"/home/lqmeyers/SLEAP_files/h5_files/validation_22_22_6.000_fixed2x6_22_22_test.analysis.h5.h"
-#d = drinks(filename)
+#d = drinks(filename,vid)
 #d.displayPerFlower()
 #print('found')
