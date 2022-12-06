@@ -5,13 +5,15 @@ import h5py
 import numpy as np
 
 #filename = r"//mnt//c//Users//lqmey//Downloads//fixed3x6_22_22_test.mp4.predictions.analysis.h5.000_fixed3x6_22_22_test.analysis.h5"
-filename = r"/home/lqmeyers/SLEAP_files/h5_files/validation_22_22_6.000_fixed2x6_22_22_test.analysis.h5.h"
+#filename = r"/home/lqmeyers/SLEAP_files/h5_files/validation_22_22_6.000_fixed2x6_22_22_test.analysis.h5.h"
 
 #for writing coords per track ------------------------------------
 def parseTrackData(file):
   with h5py.File(file,'r') as f:
     #dset_names = list(f.keys())
+    #print(dset_names)
     locations = f['tracks'][:].T
+    #print(f['video_path'][()]) #use empty tuple to index into scalar h5 data 
     #node_names = [n.decode() for n in f['node_names'][:]]
   trackFirst = np.moveaxis(locations,-1,0) #groups by track id
   return trackFirst #locations   

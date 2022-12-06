@@ -27,6 +27,7 @@ class events:
         print('initializing')
         self.file = file 
         self.vidFile = vidFile
+        ff.main(vidFile,2,show_validation=False)
         self.configFile = FlowerConfigFile
         self.patchConfig = json.load(open(self.configFile))
         self.tracks = self.getTracks()
@@ -113,9 +114,14 @@ class events:
 
 #----------------Test Calls ----------------------------------
 
+
+#test calls for 2x6_22_22 vid ------------
 #filename = r"/home/lqmeyers/SLEAP_files/h5_files/validation_22_22_6.000_fixed2x6_22_22_test.analysis.h5.h"
 #vid = "/mnt/c/Users/lqmey/OneDrive/Desktop/fixed2x6_22_22_test.mp4"
 
-#e = events(filename,vid,True)
-#e.displayEvents()
+filename = "/home/lqmeyers/SLEAP_files/h5_files/fixed3x6_22_22_test.mp4.predictions.analysis.h5.000_fixed3x6_22_22_test.analysis.h5"
+vid = "/home/lqmeyers/SLEAP_files/Bee_vids/22_6_22_vids/fixed3x6_22_22_test.mp4"
+
+e = events(filename,vid,True)
+e.displayEvents()
 
