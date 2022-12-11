@@ -108,7 +108,8 @@ def bestFrame(start,end,id,tracks,instanceScores,trackScores,mode='extra_clean')
   bestDist = 0
   bestFrame = 0
   for f in frames: 
-    if trackScores[start+f][id] > .2 and instanceScores[start+f][id]  > .99: #filter based on track and instance confidence 
+    #if trackScores[start+f][id] > .2 and instanceScores[start+f][id]  > .99: #filter based on track and instance confidence 
+    if trackScores[start+f][id] > .3 and instanceScores[start+f][id]  > .5:
       above1.append(f)
   for t in above1:
     dists = [] 
@@ -123,6 +124,12 @@ def bestFrame(start,end,id,tracks,instanceScores,trackScores,mode='extra_clean')
           if nearestB < 200:
             for n in range(4):
               bInFrame = insideRect(tracks[start+t][n][b],tracks[start+t][1][id],200,250)
+              #log.write('checking nearby node '+str(n)+'of bee '+str(b)+'='+str(bInFrame)+u'\n')
+              bCheck.append(bInFrame)
+        if mode =='less_clean': #if no other bees allowed in frame
+          if nearestB < 200:
+            for n in range(4):
+              bInFrame = insideRect(tracks[start+t][n][b],tracks[start+t][1][id],150,200)
               #log.write('checking nearby node '+str(n)+'of bee '+str(b)+'='+str(bInFrame)+u'\n')
               bCheck.append(bInFrame)
     nearest = (lowest(dists))
