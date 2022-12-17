@@ -3,18 +3,20 @@
 
 import cv2 
 import h5py 
+import datetime
 import numpy as np
 import math
 import sys 
 import json
 import random
+from matplotlib import pyplot as plt 
 
 sys.path.insert(0, '/mnt/c/Users/lqmey/OneDrive//Desktop/Bee_Visit_Count/')
 
 import profilePic as pp 
-import flowerFinder as ff
-import visitDetect as vd 
-import drinkingDetect as dd 
+#import flowerFinder as ff
+#import visitDetect as vd 
+#import drinkingDetect as dd 
 
 
 ##funcs used for data handling (eventually will be made into utils.py)
@@ -79,6 +81,17 @@ def coordDist(coord1,coord2):
   c = math.sqrt((a**2)+(b**2))
   return abs(c)
 
+  
+def getName(file):
+    '''uses a path string to get the name of a file'''
+    strOut = ''
+    i = 1
+    while file[-i] != '/':
+        i = i + 1
+        #print(file[-i])
+    strOut = file[-i:]
+    return strOut
+
 ##---------------photo class----------------------------------
 
 
@@ -93,6 +106,8 @@ class photoSet:
         self.setScoreLimits(.99,.2)
         self.setNumPerTrack(6)
         self.setOutPath()
+        self.jsonName = (str(self.outPath+getName(self.vidFile)[1:]+(datetime.datetime.now().strftime('.%d.%m.%Y.%H.%M.%S.')+'photolog.json')))
+        self.photoDict = {}
        
 
     def getTracks(self):
@@ -161,31 +176,44 @@ class photoSet:
 
     def save(self,id,frame):
         '''actually saves an individual pic of id at frame'''
-        pp.getPic(vidFile,self.tracks,id,frame,False,self.outPath)
+        filename = pp.getPic(self.vidFile,self.tracks,id,frame,False,self.outPath)
         print('saved image of bee '+str(id)+' on frame '+str(frame))
+        return filename 
 
     def saveId(self,id):
         '''saves all photos for a given ID'''        
         frames = self.getFrames(id)
         frames = frames[id]
         for f in frames:
-            self.save(id,f)
-    
+            saved = self.save(id,f)
+            self.photoDict[saved]={'id':id,'frame':f}      
+
     def saveAll(self):
         '''saves all photos for all tracks in a given video'''
         for t in range(len(self.tracks)):
             self.saveId(t)
+        self.writeJson()
     
+    def writeJson(self):
+      '''creates a json file for writing saved image metadata'''
+      init = {'Init':{'VidFile':self.vidFile,'TrackFile':self.trackFile,'Datetime':str(datetime.datetime.now())},'Photos':self.photoDict} 
+      with open(self.jsonName,'w') as f:
+            json.dump(init,f,indent=2)
+
 
 
 
 ##test calling files--------------------------------
-
-filename = r"/home/lqmeyers/SLEAP_files/h5_files/validation_22_22_6.000_fixed2x6_22_22_test.analysis.h5.h" #SLEAP Track File
-vidFile = "/home/lqmeyers/SLEAP_files/Bee_vids/22_6_22_vids/fixed2x6_22_22_test.mp4" #Video SLEAP tracking was performed on
+#'''
+filename = "/home/lqmeyers/SLEAP_files/Bee_vids/2022_06_20_vids/f4x2022_06_20.mp4.predictions.analysis.h5.h" #SLEAP Track File
+vidFile = "/home/lqmeyers/SLEAP_files/Bee_vids/2022_06_20_vids/f4x2022_06_20.mp4" #Video SLEAP tracking was performed on
 
 test = photoSet(filename,vidFile)
 test.saveAll()
-
+print('saved')
+#from track_data_exploratory import showHist
+#showHist(test.instScores)
+#'''
 #----------------------------
+
 
