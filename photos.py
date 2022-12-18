@@ -1,7 +1,4 @@
 ## a complete script for extracting all the photos from a video
-
-
-import cv2 
 import h5py 
 import datetime
 import numpy as np
@@ -103,7 +100,7 @@ class photoSet:
         self.instScores = self.getScores()
         self.trackScores = self.getScores('tracks')
         self.cleanliness(True)
-        self.setScoreLimits(.99,.2)
+        self.setScoreLimits(.88,.2) #these are estimated arbitrarily rn but could be automated later
         self.setNumPerTrack(6)
         self.setOutPath()
         self.jsonName = (str(self.outPath+getName(self.vidFile)[1:]+(datetime.datetime.now().strftime('.%d.%m.%Y.%H.%M.%S.')+'photolog.json')))
@@ -148,6 +145,7 @@ class photoSet:
         approvedFrames = [] 
         for f in range(len(self.tracks[id])):
             if self.trackScores[f][id] > self.minTrackScore and self.instScores[f][id]  > self.minInstScore:
+              if self.tracks[id][f][:].all == int or float: 
                 approvedFrames.append(f)
         if self.cleanliness == True:
             trackLast = np.moveaxis(self.tracks,0,-1)
@@ -210,7 +208,7 @@ vidFile = "/home/lqmeyers/SLEAP_files/Bee_vids/2022_06_20_vids/f4x2022_06_20.mp4
 
 test = photoSet(filename,vidFile)
 test.saveAll()
-print('saved')
+#print('saved')
 #from track_data_exploratory import showHist
 #showHist(test.instScores)
 #'''
