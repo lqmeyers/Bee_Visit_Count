@@ -8,8 +8,8 @@ imgFile = sys.argv[1]
 
 img = cv2.imread(imgFile)
 cv2.imshow('display',img)
-#cv2.waitKey(3000)
-#cv2.destroyAllWindows()
+cv2.waitKey(20000)
+cv2.destroyAllWindows()
 
 sys.stdout = open(1, 'w')
 
