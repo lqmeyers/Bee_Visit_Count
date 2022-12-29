@@ -135,7 +135,7 @@ dmypy.json
 *.csv
 *.tiff
 
-./archive/
+archive/
 
 drinks.json
 events.json
