@@ -100,7 +100,7 @@ class photoSet:
         self.instScores = self.getScores()
         self.trackScores = self.getScores('tracks')
         self.cleanliness(True)
-        self.setScoreLimits(.88,.2) #these are estimated arbitrarily rn but could be automated later
+        self.setLimits(.88,.2) #these are estimated arbitrarily rn but could be automated later
         self.setNumPerTrack(6)
         self.setOutPath()
         self.jsonName = (str(self.outPath+getName(self.vidFile)[1:]+(datetime.datetime.now().strftime('.%d.%m.%Y.%H.%M.%S.')+'photolog.json')))
@@ -117,10 +117,11 @@ class photoSet:
         self.scores = parseTrackScores(self.trackFile,mode)
         return self.scores
 
-    def setScoreLimits(self,instanceScore,trackScore):
+    def setLimits(self,instanceScore,trackScore,beeDist=200):
         '''inits score threshold for saving photos'''
         self.minInstScore = instanceScore
         self.minTrackScore = trackScore
+        self.minBeeDist = beeDist
     
     def setInterval(self,interval):
         '''determines frame interval between repeat captures'''
@@ -145,7 +146,12 @@ class photoSet:
         approvedFrames = [] 
         for f in range(len(self.tracks[id])):
             if self.trackScores[f][id] > self.minTrackScore and self.instScores[f][id]  > self.minInstScore:
-              if self.tracks[id][f][:].all == int or float: 
+              cCheck = True
+              for coord in self.tracks[id][f]:
+                for x in coord:
+                  if x <= 0: #getting rid of ones where not all key points were detected. 
+                    cCheck = False
+              if cCheck == True: 
                 approvedFrames.append(f)
         if self.cleanliness == True:
             trackLast = np.moveaxis(self.tracks,0,-1)
@@ -157,13 +163,13 @@ class photoSet:
                 for b in range(len(bees)): 
                     if b != id:
                         nearestB = coordDist(bees[id],bees[b])
-                        if nearestB < 200:
-                            for n in range(4):
-                                bInFrame = insideRect(tracks[approvedFrames[f]][n][b],tracks[approvedFrames[f]][1][id],200,250)
+                        if nearestB < self.minBeeDist: 
+                            for n in range(4): #checks all key points 
+                                bInFrame = insideRect(tracks[approvedFrames[f]][n][b],tracks[approvedFrames[f]][1][id],150,200)#previously 200,250
                                 #log.write('checking nearby node '+str(n)+'of bee '+str(b)+'='+str(bInFrame)+u'\n')
                                 bCheck.append(bInFrame)
                 if True in bCheck:
-                   pass
+                   pass #filters by removing frames where nearest bee is less than 200 pixels away 
                 else: 
                     all.append(approvedFrames[f])
         if self.limitNum == True and len(all) > self.numPerTrack:
@@ -174,7 +180,7 @@ class photoSet:
 
     def save(self,id,frame):
         '''actually saves an individual pic of id at frame'''
-        filename = pp.getPic(self.vidFile,self.tracks,id,frame,False,self.outPath)
+        filename = pp.getPic(self.vidFile,self.tracks,id,frame,False,outPath=self.outPath)
         print('saved image of bee '+str(id)+' on frame '+str(frame))
         return filename 
 
@@ -184,7 +190,7 @@ class photoSet:
         frames = frames[id]
         for f in frames:
             saved = self.save(id,f)
-            self.photoDict[saved]={'id':id,'frame':f}      
+            self.photoDict[saved]={'id':id,'frame':f,'tracking_score':self.trackScores[f][id],'instance_score':self.instScores[f][id]}      
 
     def saveAll(self):
         '''saves all photos for all tracks in a given video'''
@@ -194,7 +200,7 @@ class photoSet:
     
     def writeJson(self):
       '''creates a json file for writing saved image metadata'''
-      init = {'Init':{'VidFile':self.vidFile,'TrackFile':self.trackFile,'Datetime':str(datetime.datetime.now())},'Photos':self.photoDict} 
+      init = {'Init':{'VidFile':self.vidFile,'TrackFile':self.trackFile,'Datetime':str(datetime.datetime.now()),'Criteria':{'tracking_score':self.minTrackScore,'instance_score':self.minInstScore,'dist_to_other_bees':self.minBeeDist}},'Photos':self.photoDict} 
       with open(self.jsonName,'w') as f:
             json.dump(init,f,indent=2)
 
@@ -202,13 +208,17 @@ class photoSet:
 
 
 ##test calling files--------------------------------
-'''
-filename = "/home/lqmeyers/SLEAP_files/Bee_vids/2022_06_20_vids/f4x2022_06_20.mp4.predictions.analysis.h5.h" #SLEAP Track File
-vidFile = "/home/lqmeyers/SLEAP_files/Bee_vids/2022_06_20_vids/f4x2022_06_20.mp4" #Video SLEAP tracking was performed on
+#'''
+filename = "/home/lqmeyers/SLEAP_files/Bee_vids/2022_06_20_vids/f7x2022_06_20.mp4.predictions.analysis.h5.h" #SLEAP Track File
+vidFile = "/home/lqmeyers/SLEAP_files/Bee_vids/2022_06_20_vids/f7x2022_06_20.mp4" #Video SLEAP tracking was performed on
 
 test = photoSet(filename,vidFile)
-test.saveAll()
-#print('saved')
+test.setLimits(.81,.15,150)
+test.setOutPath('/home/lqmeyers/SLEAP_files/Bee_imgs/filesort/')
+test.setNumPerTrack(50)
+test.saveId(1)
+#test.saveAll()
+print('saved')
 #from track_data_exploratory import showHist
 #showHist(test.instScores)
 #'''
