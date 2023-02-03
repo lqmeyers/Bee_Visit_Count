@@ -23,7 +23,7 @@ def parseTrackData(file):
 
 
 class events:
-    def __init__(self,file,vidFile,saveImages=False,FlowerConfigFile='flower_patch_config.json'):
+    def __init__(self,file,vidFile,FlowerConfigFile='flower_patch_config.json'):
         print('initializing')
         self.file = file 
         self.vidFile = vidFile
@@ -33,9 +33,9 @@ class events:
         self.tracks = self.getTracks()
         print('track array shape = ',self.tracks.shape)
         print('finding visits')
-        self.visits = vd.visits(self.file,self.vidFile,saveImages).visits
+        self.visits = vd.visits(self.file,self.vidFile).visits
         print('finding drinking bees')
-        self.drinks = dd.drinks(self.file,self.vidFile,saveImages).drinks
+        self.drinks = dd.drinks(self.file,self.vidFile).drinks
         #print(self.drinks)
         self.analyze()
         print('writing output')
@@ -119,9 +119,9 @@ class events:
 #filename = r"/home/lqmeyers/SLEAP_files/h5_files/validation_22_22_6.000_fixed2x6_22_22_test.analysis.h5.h"
 #vid = "/mnt/c/Users/lqmey/OneDrive/Desktop/fixed2x6_22_22_test.mp4"
 
-filename = "/home/lqmeyers/SLEAP_files/h5_files/fixed3x6_22_22_test.mp4.predictions.analysis.h5.000_fixed3x6_22_22_test.analysis.h5"
-vid = "/home/lqmeyers/SLEAP_files/Bee_vids/22_6_22_vids/fixed3x6_22_22_test.mp4"
+filename = "/home/lqmeyers/SLEAP_files/Bee_vids/2022_07_22_vids/f3x2022_07_22.mp4.predictions.analysis.h5.h"
+vid = "/home/lqmeyers/SLEAP_files/Bee_vids/2022_07_22_vids/f3x2022_07_22.mp4"
 
-e = events(filename,vid,True)
+e = events(filename,vid)
 e.displayEvents()
 

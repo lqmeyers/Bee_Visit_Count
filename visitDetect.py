@@ -4,8 +4,6 @@
 import numpy as np 
 import h5py
 import flowerFinder as ff 
-import profilePic as pp 
-from getBestFrame import bestFrame
 import json
 import math
 from tabulate import tabulate
@@ -396,13 +394,12 @@ initialization of the object, but various parts of the data can be accessed afte
 analysis pipeline is run. Additionally data can be displayed or saved in various formats '''
 
 class visits:
-  def __init__(self,h5file,vidFile,saveImages=False,flowerConfigFile='flower_patch_config.json'):
+  def __init__(self,h5file,vidFile,flowerConfigFile='flower_patch_config.json'):
     self.file = h5file
     self.vidFile = vidFile
     self.vidName = getName(vidFile)
     self.iScores = parseTrackScores(self.file)
     self.tScores = parseTrackScores(self.file,'tracks')
-    self.saveImages = saveImages
     self.configFile = flowerConfigFile
     self.getTracks()
     #flower_config = json.load(open(flowerConfigFile))
@@ -411,7 +408,7 @@ class visits:
     self.getVisits()
     self.analyze()
     self.writeJSON()
-    self.writeCSV()
+    #self.writeCSV()
   
   def getTracks(self):
     '''seperate tracks from h5'''
@@ -448,16 +445,6 @@ class visits:
     listIn = []
     for key in range(len(self.visitDict)):
       self.visitDict[key]['event_num']=key #moving index inside dict 
-      if self.saveImages == True: 
-        start = self.visitDict[key]['start_frame']
-        end = self.visitDict[key]['end_frame']
-        trackId = self.visitDict[key]['track_id']
-        print('saving image for visit '+str(key))
-        targetFrame = bestFrame(start,end,trackId,self.tracks,self.iScores,self.tScores)
-        if targetFrame != 0:
-          self.visitDict[key]['image_file']=pp.getPic(self.vidFile,self.tracks,self.visitDict[key]['track_id'],targetFrame)
-        else:
-          self.visitDict[key]['image_file']='No photo saved'
       listIn.append(self.visitDict[key])
     keyList = [] 
     for l in listIn[0].keys():
@@ -497,6 +484,7 @@ print('written')
 #filename = r"/home/lqmeyers/SLEAP_files/h5_files/validation_22_22_6.000_fixed2x6_22_22_test.analysis.h5.h"
 #vid = "/mnt/c/Users/lqmey/OneDrive/Desktop/fixed2x6_22_22_test.mp4"
 
-#vs = visits(filename,vid,True)
+#print('testing')
+#vs = visits(filename,vid)
 #vs.displayPerFlower()
 #print('ran')
