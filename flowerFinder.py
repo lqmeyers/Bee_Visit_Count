@@ -7,6 +7,7 @@ import numpy as np
 import cv2
 import json
 import datetime
+import math 
 
 #vidFile = r"C:\Users\lqmey\OneDrive\Desktop\Bee Videos\test in feild\20_6_22_vids\fixed2x6_20_22_test.mp4"
 #imgFile = r'C:/Users/lqmey/OneDrive/Desktop/Bee Videos/test in feild/22_6_22_vids/targetFrame.tiff'
@@ -75,7 +76,7 @@ def main(vid,flowerNum,show_validation=True,run_on_colab=False):
                 flowerCorners[t] = [int(p[0]*unscale),int(p[1]*unscale)]
                 t = t + 1
             flowerDict[tckr]={'center':(int(flowerCenter[0]*unscale),int(flowerCenter[1]*unscale)),
-                            'corners':flowerCorners}
+                            'corners':flowerCorners,'length':(pythagMe(flowerCorners[0],flowerCorners[1]),pythagMe(flowerCorners[1],flowerCorners[2]))}
         tckr = tckr+1
     if show_validation == True:
         #img = cv2.circle(img,whiteCenter,4, (0,0,255), -1)
@@ -98,7 +99,14 @@ def main(vid,flowerNum,show_validation=True,run_on_colab=False):
         json.dump(flowerDict,f,indent=3)
     return
  
-  
+def pythagMe(coord1,coord2):
+    '''performs pythagorean theorum to return the
+    distance between two points. Input coords as [x,y]'''
+    x1 = coord1[0]
+    y1 = coord1[1]
+    x2 = coord2[0]
+    y2 = coord2[1]
+    return math.sqrt((y2-y1)**2+(x2-x1)**2)
 
 def boxList(contours):
     '''fits a rectangle to all contours and returns list of 
@@ -132,7 +140,7 @@ def getName(file):
 
 
 #vidFile = r"/home/lqmeyers/SLEAP_files/Bee_vids/22_6_22_vids/fixed2x6_22_22_test.mp4"
-#results = main(vidFile,2,show_validation=True)
+#results = main(vidFile,2,show_validation=False)
 #json_string = json.dumps(results,indent=3)
 #print(json_string)
 
