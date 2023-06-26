@@ -17,7 +17,17 @@ import math
 def main(vid,flowerNum,show_validation=True,run_on_colab=False):
     '''recieves vid file and finds coords of flowerNum # of flowers. If mode = center
     returns center coords, else corners. If show validation = True will plot
-    and display results on image'''
+    and display results on image'
+    
+    Inputs: 
+        vid(string): Path to video file
+        flowerNum(int): number of flowers to expect in frame
+        show_validation(bool):display frame with predictions or not 
+        run_on_colab(bool):updates display type for if running on google colaboratory
+
+    Outputs:
+        Dumps coordinates into flower_patch_config.json 
+    '''
     vidName = getName(vid)
 
     cap = cv2.VideoCapture(vid)
@@ -139,8 +149,11 @@ def getName(file):
     return strOut
 
 
+
+##------------------ Test Calling----------------------
+
 #vidFile = r"/home/lqmeyers/SLEAP_files/Bee_vids/22_6_22_vids/fixed2x6_22_22_test.mp4"
-#results = main(vidFile,2,show_validation=False)
+#results = main(vidFile,2,show_validation=False) #ysed to return coordinates, now writes output to file 
 #json_string = json.dumps(results,indent=3)
 #print(json_string)
 

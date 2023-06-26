@@ -190,6 +190,7 @@ class photoSet:
         frames = frames[id]
         for f in frames:
             saved = self.save(id,f)
+            #add background color detection and edge annotation here
             self.photoDict[saved]={'id':id,'frame':f,'tracking_score':self.trackScores[f][id],'instance_score':self.instScores[f][id]}      
 
     def saveAll(self):
@@ -208,7 +209,7 @@ class photoSet:
 
 
 ##test calling files--------------------------------
-#'''
+'''
 filename = "/home/lqmeyers/SLEAP_files/Bee_vids/2022_06_20_vids/f7x2022_06_20.mp4.predictions.analysis.h5.h" #SLEAP Track File
 vidFile = "/home/lqmeyers/SLEAP_files/Bee_vids/2022_06_20_vids/f7x2022_06_20.mp4" #Video SLEAP tracking was performed on
 
