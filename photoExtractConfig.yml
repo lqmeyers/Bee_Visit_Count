@@ -1,0 +1,14 @@
+random_seed: 101 #seed for random sampling
+verbose: True
+out_dir_path: '/home/lmeyers/Bee_imgs_test/' #directory to save extracted images to
+random_sample: True 
+num_imgs_per_track: 6
+clean_photos: True
+min_bee_distance: 200
+filter_by_score: True
+min_instance_score: .8
+min_track_score: .15
+
+
+
+

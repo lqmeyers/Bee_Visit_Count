@@ -2,6 +2,7 @@ import cv2
 import h5py 
 import numpy as np
 import math
+import os
 
 #-----------Extract h5 data ------------------------------------
 
@@ -94,15 +95,18 @@ def extract_body(frame, centerX, centerY, angle, width=200, height=400, cX=None,
 
 def justFileName(pathIn):
     '''just returns filename from full path str input'''
-    out = ''
-    save = False
-    for c in pathIn[::-1]:
-      if c == '.':
-        save = True 
-      if c == '/':
-        return out[::-1]
-      if save == True:
-        out = out + c
+    # out = ''
+    # save = False
+    # for c in pathIn[::-1]:
+    #   if c == '.':
+    #     save = True 
+    #   if c == '/':
+    #     return out[::-1]
+    #   if save == True:
+    #     out = out + c
+    return(os.path.basename(pathIn[:-4]))
+
+    
 
 
 #--test file names-------------------------
@@ -130,8 +134,8 @@ def getPic(vidFile,tracks,targetTrack,targetFrame,show=False,outPath='/home/lqme
         cv2.imshow('crop',beephoto)
         cv2.waitKey(5000)
         cv2.destroyAllWindows()
-    name = justFileName(vidFile)[0:-1]+".mp4.track"+str(targetTrack).zfill(6)+'.frame'+str(targetFrame).zfill(6)+'.jpg'
-    outFile = outPath+name
+    name = os.path.basename(vidFile)[1:-4]+".mp4.track"+str(targetTrack).zfill(6)+'.frame'+str(targetFrame).zfill(6)+'.png'
+    outFile = os.path.join(outPath,name)
     cv2.imwrite(outFile,beephoto)
     return name
 

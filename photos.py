@@ -7,6 +7,8 @@ import sys
 import json
 import random
 from matplotlib import pyplot as plt 
+import yaml
+import os
 
 sys.path.insert(0, '/mnt/c/Users/lqmey/OneDrive//Desktop/Bee_Visit_Count/')
 
@@ -91,19 +93,60 @@ def getName(file):
 
 ##---------------photo class----------------------------------
 
-
+##---Class to contain all functions and extracted data for a set of photos from a video
 class photoSet:
-    def __init__(self,trackFile,vidFile):
+    def __init__(self,trackFile,vidFile,config_file='/home/lmeyers/Bee_Visit_Count/photoExtractConfig.yml'):
+        try:
+            with open(config_file) as f:
+                config = yaml.safe_load(f)
+            seed = config['random_seed']
+            self.verbose = config['verbose']
+            out_path = config['out_dir_path'] #: '/home/lmeyers/Bee_imgs_test/' #directory to save extracted images to
+            random_sample = config['random_sample'] #: True 
+            num_imgs_per_track = config['num_imgs_per_track']
+            clean = config['clean_photos']#: True
+            min_bee_dist = config['min_bee_distance'] #: 200
+            filtering = config['filter_by_score'] #: True
+            min_inst_score = config['min_instance_score'] #: 
+            min_track_score = config['min_track_score']
+        except Exception as e:
+            print('ERROR - unable to open experiment config file. Terminating.')
+            print('Exception msg:',e)
+            return -1
+        
+        #set random seed
+        random.seed(seed)
+        
+        #initialize datafiles, configs, and paths
         self.trackFile = trackFile 
         self.vidFile = vidFile
+        
+        #Extract data from h5 file 
         self.tracks = self.getTracks()
         self.instScores = self.getScores()
         self.trackScores = self.getScores('tracks')
-        self.cleanliness(True)
-        self.setLimits(.88,.2) #these are estimated arbitrarily rn but could be automated later
-        self.setNumPerTrack(6)
-        self.setOutPath()
-        self.jsonName = (str(self.outPath+getName(self.vidFile)[1:]+(datetime.datetime.now().strftime('.%d.%m.%Y.%H.%M.%S.')+'photolog.json')))
+        
+        #Set photo filtering criteria
+        self.cleanliness(clean)
+        if filtering == True:
+          self.setLimits(min_inst_score,min_track_score,min_bee_dist) #these are estimated arbitrarily rn but could be automated later
+        else:
+          self.setLimits(0.0,0.0)
+        
+        #Set sample number per track
+        if random_sample == True:
+          self.setNumPerTrack(num_imgs_per_track)
+        else:
+          self.limitNum = False
+
+        #Destination folder
+        if not os.path.exists(out_path):
+           os.mkdir(out_path)
+        self.setOutPath(out_path)
+
+        #Documentation files
+        self.jsonName = (os.path.basename(self.vidFile)[1:]+(datetime.datetime.now().strftime('.%d.%m.%Y.%H.%M.%S.')+'photolog.json'))
+        self.jsonPath = os.path.join(self.outPath,self.jsonName)
         self.photoDict = {}
        
 
@@ -153,7 +196,7 @@ class photoSet:
                     cCheck = False
               if cCheck == True: 
                 approvedFrames.append(f)
-        if self.cleanliness == True:
+        if self.cleanliness == True: #if removing other bees in frame
             trackLast = np.moveaxis(self.tracks,0,-1)
             tracks = np.moveaxis(trackLast,-1,2) #change shape from format expectec in most other functions 
             all = [] 
@@ -202,7 +245,7 @@ class photoSet:
     def writeJson(self):
       '''creates a json file for writing saved image metadata'''
       init = {'Init':{'VidFile':self.vidFile,'TrackFile':self.trackFile,'Datetime':str(datetime.datetime.now()),'Criteria':{'tracking_score':self.minTrackScore,'instance_score':self.minInstScore,'dist_to_other_bees':self.minBeeDist}},'Photos':self.photoDict} 
-      with open(self.jsonName,'w') as f:
+      with open(self.jsonPath,'w+') as f:
             json.dump(init,f,indent=2)
 
 

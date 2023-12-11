@@ -8,11 +8,12 @@ from photos import photoSet
 
 trackFile = sys.argv[1]
 vidFile = sys.argv[2]
+config_file = sys.argv[3]
 
 
 sys.stdout = open(1, 'w')
 
-p = photoSet(trackFile,vidFile)
+p = photoSet(trackFile,vidFile,config_file)
 p.saveAll()
 print('saved')
 
