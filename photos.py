@@ -99,6 +99,7 @@ class photoSet:
         try:
             with open(config_file) as f:
                 config = yaml.safe_load(f)
+                self.config = config
             seed = config['random_seed']
             self.verbose = config['verbose']
             out_path = config['out_dir_path'] #: '/home/lmeyers/Bee_imgs_test/' #directory to save extracted images to
@@ -109,6 +110,7 @@ class photoSet:
             filtering = config['filter_by_score'] #: True
             min_inst_score = config['min_instance_score'] #: 
             min_track_score = config['min_track_score']
+            self.photo_params = config['photo_params']
         except Exception as e:
             print('ERROR - unable to open experiment config file. Terminating.')
             print('Exception msg:',e)
@@ -223,7 +225,7 @@ class photoSet:
 
     def save(self,id,frame):
         '''actually saves an individual pic of id at frame'''
-        filename = pp.getPic(self.vidFile,self.tracks,id,frame,False,outPath=self.outPath)
+        filename = pp.getPic(self.vidFile,self.tracks,id,frame,self.photo_params,False,outPath=self.outPath)
         print('saved image of bee '+str(id)+' on frame '+str(frame))
         return filename 
 
@@ -233,8 +235,14 @@ class photoSet:
         frames = frames[id]
         for f in frames:
             saved = self.save(id,f)
+            bee = self.tracks[id][f]
             #add background color detection and edge annotation here
-            self.photoDict[saved]={'id':id,'frame':f,'tracking_score':self.trackScores[f][id],'instance_score':self.instScores[f][id]}      
+            self.photoDict[saved]={'id':id,
+                                   'frame':f,
+                                   'tracking_score':self.trackScores[f][id],
+                                   'instance_score':self.instScores[f][id],
+                                   'pose':bee.tolist(),  #this may need to be changed incase skeleton changes                                  
+    }      
 
     def saveAll(self):
         '''saves all photos for all tracks in a given video'''
@@ -244,7 +252,8 @@ class photoSet:
     
     def writeJson(self):
       '''creates a json file for writing saved image metadata'''
-      init = {'Init':{'VidFile':self.vidFile,'TrackFile':self.trackFile,'Datetime':str(datetime.datetime.now()),'Criteria':{'tracking_score':self.minTrackScore,'instance_score':self.minInstScore,'dist_to_other_bees':self.minBeeDist}},'Photos':self.photoDict} 
+      #init = {'Init':{'VidFile':self.vidFile,'TrackFile':self.trackFile,'Datetime':str(datetime.datetime.now()),'Criteria':{'tracking_score':self.minTrackScore,'instance_score':self.minInstScore,'dist_to_other_bees':self.minBeeDist}},'Photos':self.photoDict} 
+      init = {'Init':{'VidFile':self.vidFile,'TrackFile':self.trackFile,'Datetime':str(datetime.datetime.now()),'Configs':self.config},'Photos':self.photoDict} 
       with open(self.jsonPath,'w+') as f:
             json.dump(init,f,indent=2)
 

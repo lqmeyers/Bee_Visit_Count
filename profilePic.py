@@ -34,17 +34,17 @@ def parseInstanceScores(file):
 ###--------------------Jeffrey's code--------------------------------------------
 
 #----------All params listed in one spot for easy tweaking-------------------
-
-width=150 #: Class Attribute for width for plotting 
-height=200 #: Class Attribute for height for plotting 
-scale = 1.0 #: Class Attribute for scale for plotting 
-out_width=None #: Class Attribute for out_width for plotting 
-out_height=None #: Class Attribute for out_height for plotting
-cX=None #: Class Attribute for cX for plotting 
-cY=None #: Class Attribute for cX for plotting 
-ignore_angle = False #: Class Attribute for ignore_angle for plotting (this is used to extract images without angle normalization)
-y_offset = 0 
-
+default_param_dict = {
+'width':150, #: Class Attribute for width for plotting 
+'height':200, #: Class Attribute for height for plotting 
+'scale': 1.0, #: Class Attribute for scale for plotting 
+'out_width':None, #: Class Attribute for out_width for plotting 
+'out_height':None, #: Class Attribute for out_height for plotting
+'cX':None, #: Class Attribute for cX for plotting 
+'cY':None, #: Class Attribute for cX for plotting 
+'ignore_angle':False, #: Class Attribute for ignore_angle for plotting (this is used to extract images without angle normalization)
+'y_offset':0,
+}
 #----------Helper functions----------------------
 
 #func for finding angle  of body, feed in neck and waist? 
@@ -120,20 +120,34 @@ targetFrame = 175
 
 #---------------main function---------------------
 
-def getPic(vidFile,tracks,targetTrack,targetFrame,show=False,outPath='/home/lqmeyers/SLEAP_files/Bee_imgs/'):
+def getPic(vidFile,tracks,targetTrack,targetFrame,param_dict=default_param_dict,show=False,outPath='/home/lqmeyers/SLEAP_files/Bee_imgs/'):
     '''saves a photo of bee from a given track Id (Target Track) at a 
     single frame (TargetFrame) of a video file(VidFile)'''
+    #parse track
     bee = tracks[targetTrack][targetFrame][:]
     waist = bee[1]
     neck = bee[2]
+    
+    #get base frame
     cap = cv2.VideoCapture(vidFile)
     cap.set(cv2.CAP_PROP_POS_FRAMES,targetFrame)
     ret, fullImg = cap.read()
-    beephoto = extract_body(fullImg,waist[0],waist[1], angleBetweenPoints(waist,neck),width,height)
+
+    #crop photo according to params
+    width = param_dict['width']
+    height = param_dict['height']
+    cX = param_dict['cX']
+    cY = param_dict['cY']
+    scale = param_dict['scale']
+    ignore_angle = param_dict['ignore_angle']
+    beephoto = extract_body(fullImg,waist[0],waist[1], angleBetweenPoints(waist,neck),width,height,cX,cY,scale,ignore_angle)
+
     if show == True:
         cv2.imshow('crop',beephoto)
         cv2.waitKey(5000)
         cv2.destroyAllWindows()
+    
+    #save image
     name = os.path.basename(vidFile)[1:-4]+".mp4.track"+str(targetTrack).zfill(6)+'.frame'+str(targetFrame).zfill(6)+'.png'
     outFile = os.path.join(outPath,name)
     cv2.imwrite(outFile,beephoto)
