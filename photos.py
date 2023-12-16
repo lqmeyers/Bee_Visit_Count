@@ -8,6 +8,7 @@ import json
 import random
 from matplotlib import pyplot as plt 
 import yaml
+import pandas as pd 
 import os
 
 sys.path.insert(0, '/mnt/c/Users/lqmey/OneDrive//Desktop/Bee_Visit_Count/')
@@ -150,6 +151,7 @@ class photoSet:
         self.jsonName = (os.path.basename(self.vidFile)[1:]+(datetime.datetime.now().strftime('.%d.%m.%Y.%H.%M.%S.')+'photolog.json'))
         self.jsonPath = os.path.join(self.outPath,self.jsonName)
         self.photoDict = {}
+        self.photo_dataframe = pd.DataFrame(columns=['vid_file','track_file','frame','track_id','tracking_score','instance_score'])
        
 
     def getTracks(self):
@@ -242,7 +244,23 @@ class photoSet:
                                    'tracking_score':self.trackScores[f][id],
                                    'instance_score':self.instScores[f][id],
                                    'pose':bee.tolist(),  #this may need to be changed incase skeleton changes                                  
-    }      
+    } 
+            
+    def writeId(self,id):
+      '''writes a line to out_dataframe for each image to be saved from track ID'''
+      frames = self.getFrames(id)
+      frames = frames[id]
+      for f in frames:
+        bee = self.tracks[id][f]
+        bee = bee.tolist()
+        row = len(self.photo_dataframe)
+        self.photo_dataframe.loc[row] = {'vid_file':self.vidFile,'track_file':self.trackFile,
+                                                                'frame':f,'track_id':id,'tracking_score':self.trackScores[f][id],
+                                                                'instance_score':self.instScores[f][id]}
+        for kp in range(4):
+          col_name = 'keypoint '+str(kp)
+          val = str(bee[kp])
+          self.photo_dataframe.loc[row,col_name] = val
 
     def saveAll(self):
         '''saves all photos for all tracks in a given video'''
@@ -250,26 +268,87 @@ class photoSet:
             self.saveId(t)
         self.writeJson()
     
+    def writeALL(self,out_csv_path):
+      '''writes all images to be saved to a dataframe and to a csv'''
+      for t in range(len(self.tracks)):
+          self.writeId(t)
+      self.photo_dataframe.to_csv(out_csv_path,index=False)
+
     def writeJson(self):
       '''creates a json file for writing saved image metadata'''
       #init = {'Init':{'VidFile':self.vidFile,'TrackFile':self.trackFile,'Datetime':str(datetime.datetime.now()),'Criteria':{'tracking_score':self.minTrackScore,'instance_score':self.minInstScore,'dist_to_other_bees':self.minBeeDist}},'Photos':self.photoDict} 
-      init = {'Init':{'VidFile':self.vidFile,'TrackFile':self.trackFile,'Datetime':str(datetime.datetime.now()),'Configs':self.config},'Photos':self.photoDict} 
+      init = {'init':{'vid_file':self.vid_file,'track_file':self.track_file,'date_of_extraction':str(datetime.datetime.now()),'configs':self.config},'photos':self.photoDict} 
       with open(self.jsonPath,'w+') as f:
             json.dump(init,f,indent=2)
 
+
+def save_images_from_dataframe(in_csv,config_file):
+    '''saves images based on rows in a dataframe containing:
+    video path, trackfile, frame, track id, using the params in photo config file '''  
+    
+    df = pd.read_csv(in_csv)
+    df.groupby('vid_file')
+    df_out = df
+    # Dictionary to cache opened files
+    file_cache = {}
+
+    row_index = 0 
+    # Iterate through DataFrame rows
+    for index, row in df.iterrows():
+        vid_file_path = row['vid_file']
+        track_file_path = row['track_file']
+        id = row['track_id']
+        frame = row['frame']
+
+        # Check if vid file is already opened
+        if vid_file_path not in file_cache:
+            #vid_file = open(vid_file_path, 'rb')
+            vid_file = vid_file_path
+            file_cache[vid_file_path] = vid_file #right now this doesnt exactly matter cause getPic opens vidFile
+        else:
+            vid_file = file_cache[vid_file_path]
+
+        # Check if track file is already opened
+        if track_file_path not in file_cache:
+            #track_file = open(track_file_path, 'r')
+            tracks = parseTrackData(track_file_path)
+            file_cache[track_file_path] = tracks
+        else:
+            tracks = file_cache[track_file_path]
+        
+        with open(config_file) as f:
+                        config = yaml.safe_load(f)            
+        out_path = config['out_dir_path'] #: '/home/lmeyers/Bee_imgs_test/' #directory to save extracted images t
+        photo_params = config['photo_params']
+        
+
+        filename = pp.getPic(vid_file,tracks,id,frame,photo_params,False,outPath=out_path)
+        print('saved image of bee '+str(id)+' on frame '+str(frame))
+        df_out.loc[row_index,'photo_file_path'] = filename
+        df_out.loc[row_index,photo_params.keys()] = photo_params.values()
+
+        
+        row_index += 1
+
+    df_out.to_csv(in_csv[:-4]+'.saved.csv',index=False)
+ 
+   
 
 
 
 ##test calling files--------------------------------
 '''
-filename = "/home/lqmeyers/SLEAP_files/Bee_vids/2022_06_20_vids/f7x2022_06_20.mp4.predictions.analysis.h5.h" #SLEAP Track File
-vidFile = "/home/lqmeyers/SLEAP_files/Bee_vids/2022_06_20_vids/f7x2022_06_20.mp4" #Video SLEAP tracking was performed on
+filename = "/home/lmeyers/SLEAP_files/Bee_vids/2022_06_20_vids/f7x2022_06_20.mp4.predictions.analysis.h5.h" #SLEAP Track File
+vidFile = "/home/lmeyers/SLEAP_files/Bee_vids/2022_06_20_vids/f7x2022_06_20.mp4" #Video SLEAP tracking was performed on
 
 test = photoSet(filename,vidFile)
 test.setLimits(.81,.15,150)
 test.setOutPath('/home/lqmeyers/SLEAP_files/Bee_imgs/filesort/')
 test.setNumPerTrack(50)
-test.saveId(1)
+#test.saveId(1)
+test.writeALL('/home/lmeyers/Bee_imgs_test/out_test.csv')
+
+save_images_from_dataframe('/home/lmeyers/Bee_imgs_test/out_test.csv','/home/lmeyers/Bee_Visit_Count/photoExtractConfig.yml')
 #test.saveAll()
 print('saved')
 #from track_data_exploratory import showHist
