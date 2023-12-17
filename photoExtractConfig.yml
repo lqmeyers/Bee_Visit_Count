@@ -1,8 +1,8 @@
 random_seed: 101 #seed for random sampling
 verbose: True
 out_dir_path: '/home/lmeyers/Bee_imgs_test/' #directory to save extracted images to
-random_sample: True 
-num_imgs_per_track: 6
+random_sample: True #Down sample photos in track 
+num_imgs_per_track: 6 #Number of images to sample
 photo_params:
   width: 250 #: Class Attribute for width for plotting 
   height: 250 #: Class Attribute for height for plotting 
@@ -13,12 +13,16 @@ photo_params:
   cY:  #: Class Attribute for cX for plotting 
   ignore_angle: False #: Class Attribute for ignore_angle for plotting (this is used to extract images without angle normalization)
   y_offset: 0 
-clean_photos: True
-min_bee_distance: 200
-filter_by_score: True
-min_instance_score: .8
-min_track_score: .15
-
+clean_photos: True #filter out photos with other bees
+min_bee_distance: 200 #distance to bee keypoint to remove 
+filter_by_score: True #filter photos with low confidence detections
+min_instance_score: .8 #min score for model detection/pose 
+min_track_score: .15 #min score for track continuity
+dataframe_configs: #for saving images from a pregenerated dataframe
+  video_col_name: vid_file #column with paths to video files 
+  track_col_name: track_file #column with paths to coresponding track files 
+  frame_col_name: frame #column containing frame number
+  track_id_col_name: track_id #coloumn containing tracking_id_number
 
 
 

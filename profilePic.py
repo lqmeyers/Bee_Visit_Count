@@ -120,7 +120,7 @@ targetFrame = 175
 
 #---------------main function---------------------
 
-def getPic(vidFile,tracks,targetTrack,targetFrame,param_dict=default_param_dict,show=False,outPath='/home/lqmeyers/SLEAP_files/Bee_imgs/'):
+def getPic(vid_path,vid_obj,tracks,targetTrack,targetFrame,param_dict=default_param_dict,show=False,outPath='/home/lqmeyers/SLEAP_files/Bee_imgs/'):
     '''saves a photo of bee from a given track Id (Target Track) at a 
     single frame (TargetFrame) of a video file(VidFile)'''
     #parse track
@@ -129,9 +129,8 @@ def getPic(vidFile,tracks,targetTrack,targetFrame,param_dict=default_param_dict,
     neck = bee[2]
     
     #get base frame
-    cap = cv2.VideoCapture(vidFile)
-    cap.set(cv2.CAP_PROP_POS_FRAMES,targetFrame)
-    ret, fullImg = cap.read()
+    vid_obj.set(cv2.CAP_PROP_POS_FRAMES,targetFrame)
+    ret, fullImg = vid_obj.read()
 
     #crop photo according to params
     width = param_dict['width']
@@ -148,7 +147,7 @@ def getPic(vidFile,tracks,targetTrack,targetFrame,param_dict=default_param_dict,
         cv2.destroyAllWindows()
     
     #save image
-    name = os.path.basename(vidFile)[1:-4]+".mp4.track"+str(targetTrack).zfill(6)+'.frame'+str(targetFrame).zfill(6)+'.png'
+    name = os.path.basename(vid_path)[1:-4]+".mp4.track"+str(targetTrack).zfill(6)+'.frame'+str(targetFrame).zfill(6)+'.png'
     outFile = os.path.join(outPath,name)
     cv2.imwrite(outFile,beephoto)
     return name

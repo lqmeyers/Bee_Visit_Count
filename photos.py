@@ -10,6 +10,7 @@ from matplotlib import pyplot as plt
 import yaml
 import pandas as pd 
 import os
+import cv2
 
 sys.path.insert(0, '/mnt/c/Users/lqmey/OneDrive//Desktop/Bee_Visit_Count/')
 
@@ -123,6 +124,7 @@ class photoSet:
         #initialize datafiles, configs, and paths
         self.trackFile = trackFile 
         self.vidFile = vidFile
+        self.vid_obj = cv2.VideoCapture(vidFile) #open video once 
         
         #Extract data from h5 file 
         self.tracks = self.getTracks()
@@ -227,7 +229,7 @@ class photoSet:
 
     def save(self,id,frame):
         '''actually saves an individual pic of id at frame'''
-        filename = pp.getPic(self.vidFile,self.tracks,id,frame,self.photo_params,False,outPath=self.outPath)
+        filename = pp.getPic(self.vidFile,self.vid_obj,self.tracks,id,frame,self.photo_params,False,outPath=self.outPath)
         print('saved image of bee '+str(id)+' on frame '+str(frame))
         return filename 
 
@@ -277,7 +279,7 @@ class photoSet:
     def writeJson(self):
       '''creates a json file for writing saved image metadata'''
       #init = {'Init':{'VidFile':self.vidFile,'TrackFile':self.trackFile,'Datetime':str(datetime.datetime.now()),'Criteria':{'tracking_score':self.minTrackScore,'instance_score':self.minInstScore,'dist_to_other_bees':self.minBeeDist}},'Photos':self.photoDict} 
-      init = {'init':{'vid_file':self.vid_file,'track_file':self.track_file,'date_of_extraction':str(datetime.datetime.now()),'configs':self.config},'photos':self.photoDict} 
+      init = {'init':{'vid_file':self.vidFile,'track_file':self.trackFile,'date_of_extraction':str(datetime.datetime.now()),'configs':self.config},'photos':self.photoDict} 
       with open(self.jsonPath,'w+') as f:
             json.dump(init,f,indent=2)
 
@@ -292,18 +294,30 @@ def save_images_from_dataframe(in_csv,config_file):
     # Dictionary to cache opened files
     file_cache = {}
 
+    with open(config_file) as f:
+                            config = yaml.safe_load(f)            
+    out_path = config['out_dir_path'] #: '/home/lmeyers/Bee_imgs_test/' #directory to save extracted images t
+    photo_params = config['photo_params']
+    dataframe_configs = config['dataframe_configs']
+    
+    video_col_name = dataframe_configs['video_col_name']
+    track_col_name = dataframe_configs['track_col_name']
+    track_id_col_name = dataframe_configs['track_id_col_name']
+    frame_col_name = dataframe_configs['frame_col_name']
+
     row_index = 0 
     # Iterate through DataFrame rows
-    for index, row in df.iterrows():
-        vid_file_path = row['vid_file']
-        track_file_path = row['track_file']
-        id = row['track_id']
-        frame = row['frame']
+    for index, row in df.iterrows():        
+        
+        vid_file_path = row[video_col_name]
+        track_file_path = row[track_col_name]
+        id = row[track_id_col_name]
+        frame = row[frame_col_name]
 
         # Check if vid file is already opened
         if vid_file_path not in file_cache:
             #vid_file = open(vid_file_path, 'rb')
-            vid_file = vid_file_path
+            vid_file = cv2.VideoCapture(vid_file_path)
             file_cache[vid_file_path] = vid_file #right now this doesnt exactly matter cause getPic opens vidFile
         else:
             vid_file = file_cache[vid_file_path]
@@ -316,13 +330,7 @@ def save_images_from_dataframe(in_csv,config_file):
         else:
             tracks = file_cache[track_file_path]
         
-        with open(config_file) as f:
-                        config = yaml.safe_load(f)            
-        out_path = config['out_dir_path'] #: '/home/lmeyers/Bee_imgs_test/' #directory to save extracted images t
-        photo_params = config['photo_params']
-        
-
-        filename = pp.getPic(vid_file,tracks,id,frame,photo_params,False,outPath=out_path)
+        filename = pp.getPic(vid_file_path,vid_file,tracks,id,frame,photo_params,False,outPath=out_path)
         print('saved image of bee '+str(id)+' on frame '+str(frame))
         df_out.loc[row_index,'photo_file_path'] = filename
         df_out.loc[row_index,photo_params.keys()] = photo_params.values()
